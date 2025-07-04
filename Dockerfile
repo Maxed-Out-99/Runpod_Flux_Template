@@ -6,23 +6,26 @@ RUN apt update && apt install -y \
     apt clean
 
 # Install PyTorch
-RUN pip install --default-timeout=300 --retries=10 torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
+RUN pip install --default-timeout=300 --retries=10 \
+    torch==2.2.2 torchvision==0.17.2 \
+    --extra-index-url https://download.pytorch.org/whl/cu122
 
-# Install ComfyUI
+# Install ComfyUI at locked commit
 WORKDIR /workspace
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
-    cd /workspace/ComfyUI && \
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
+    cd ComfyUI && \
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
 
 # Install ComfyUI dependencies
 RUN pip install -r /workspace/ComfyUI/requirements.txt
 
-# Copy the Maxed Out Installer Script
+# Copy install + launch script
 COPY install_maxedout.py /workspace/install_maxedout.py
 COPY launch.sh /workspace/launch.sh
 RUN chmod +x /workspace/launch.sh
 
-# Expose port for ComfyUI web UI
+# Expose ComfyUI web port
 EXPOSE 8188
 
-CMD ["/workspace/launch.sh"]
+# Use bash explicitly instead of JSON array to support env vars and logging
+CMD bash /workspace/launch.sh
