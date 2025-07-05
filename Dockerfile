@@ -2,7 +2,8 @@ FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Install system dependencies
 RUN apt update && apt install -y \
-    python3 python3-pip git wget && \
+    python3 python3-pip git git-lfs wget && \
+    git lfs install && \
     apt clean
 
 # Install PyTorch
@@ -15,12 +16,12 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
 
 # Install ComfyUI dependencies
-RUN pip install -r /workspace/ComfyUI/requirements.txt
+RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
 # Copy install + launch script
 COPY install_maxedout.py /workspace/install_maxedout.py
-COPY launch.sh /workspace/launch.sh
-RUN chmod +x /workspace/launch.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Expose port for ComfyUI web UI
 EXPOSE 8188
