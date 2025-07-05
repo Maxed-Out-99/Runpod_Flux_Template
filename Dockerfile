@@ -53,7 +53,7 @@ WORKDIR /workspace
 # Create the specific default workflows directory to ensure it exists
 RUN mkdir -p /workspace/ComfyUI/user/default/workflows
 
-COPY "workflows/Flux Bootcamp (Level 1).json" /workspace/ComfyUI/user/default/workflows/
+COPY workflows/flux_bootcamp_level1.json /workspace/ComfyUI/user/default/workflows/
 
 # Copy the launch script (make sure you've edited it to remove the installer call)
 COPY launch.sh /workspace/launch.sh
