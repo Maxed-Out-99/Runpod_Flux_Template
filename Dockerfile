@@ -4,7 +4,7 @@ FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 RUN apt update && apt install -y \
     python3 python3-pip git git-lfs wget && \
     git lfs install && \
-    apt clean
+    apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PyTorch
 RUN pip install --default-timeout=300 --retries=10 torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
@@ -18,13 +18,13 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 # Install ComfyUI dependencies
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
-# Copy install + launch script
+# Copy installer + startup
 COPY install_maxedout.py /workspace/install_maxedout.py
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Expose port for ComfyUI web UI
+# Expose port
 EXPOSE 8188
 
-# Use bash explicitly instead of JSON array to support env vars and logging
-CMD bash /workspace/launch.sh
+# Default entrypoint for local Docker (RunPod overrides this)
+CMD ["/start.sh"]
