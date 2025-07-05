@@ -19,11 +19,6 @@ MODEL_DIR = Path.cwd() / "models"
 LOG_DIR = Path("install_logs_mxd")
 TEST_MODE = "--test" in sys.argv
 
-# Force script to run inside ComfyUI folder
-COMFY_PATH = Path("/workspace/ComfyUI")
-if Path.cwd() != COMFY_PATH:
-    os.chdir(COMFY_PATH)
-
 # --- Stream redirection for logging ---
 _orig_stdout = sys.stdout
 _orig_stderr = sys.stderr
