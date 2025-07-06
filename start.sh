@@ -11,9 +11,6 @@ else
     echo "✅ Core FLUX models already present."
 fi
 
-# Optional: Touch healthcheck so RunPod knows it's ready
-touch /workspace/healthcheck
-
 echo "🚀 Starting ComfyUI..."
 cd /workspace/ComfyUI
 exec python3 main.py --listen 0.0.0.0 --port 8188 --enable-cors

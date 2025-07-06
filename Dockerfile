@@ -35,7 +35,7 @@ COPY install_maxedout.py /workspace/install_maxedout.py
 COPY download_core_models.py /workspace/download_core_models.py
 COPY download_upscale_models.py /workspace/download_upscale_models.py
 COPY download_adetailer_models.py /workspace/download_adetailer_models.py
-COPY start.sh /start.sh
+COPY start.sh /workspace/start.sh
 RUN chmod +x /start.sh
 
 # Expose port
