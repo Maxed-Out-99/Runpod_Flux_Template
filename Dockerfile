@@ -7,13 +7,31 @@ RUN apt update && apt install -y \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PyTorch
-RUN pip install --default-timeout=300 --retries=10 torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
+ARG PYTORCH=2.2.2
+ARG TORCHVISION=0.17.2
+ARG TORCHAUDIO=2.2.2
+ARG CUDA=122
+
+RUN pip install --no-cache-dir --default-timeout=300 --retries=10 \
+    torch==${PYTORCH} torchvision==${TORCHVISION} torchaudio==${TORCHAUDIO} \
+    --extra-index-url https://download.pytorch.org/whl/cu${CUDA}
 
 # Install ComfyUI
 WORKDIR /workspace
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
     cd /workspace/ComfyUI && \
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
+
+# Create necessary model directories
+RUN mkdir -p /workspace/ComfyUI/models/clip \
+             /workspace/ComfyUI/models/diffusion_models \
+             /workspace/ComfyUI/models/vae
+
+# Download core baked-in models
+RUN wget -O /workspace/ComfyUI/models/clip/t5xxl_fp16.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/clip/t5xxl_fp16.safetensors" --progress=bar:force:noscroll && \
+    wget -O /workspace/ComfyUI/models/clip/clip_l.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/clip/clip_l.safetensors" --progress=bar:force:noscroll && \
+    wget -O /workspace/ComfyUI/models/diffusion_models/flux1-dev-fp8.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/unet/Dev/flux1-dev-fp8.safetensors" --progress=bar:force:noscroll && \
+    wget -O /workspace/ComfyUI/models/vae/ae.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/vae/ae.safetensors" --progress=bar:force:noscroll
 
 # Install ComfyUI dependencies
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
