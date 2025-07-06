@@ -31,15 +31,16 @@ RUN mkdir -p /workspace/ComfyUI/models/clip \
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
 # Copy scripts + startup
-COPY install_maxedout.py /workspace/install_maxedout.py
-COPY download_core_models.py /workspace/download_core_models.py
-COPY download_upscale_models.py /workspace/download_upscale_models.py
-COPY download_adetailer_models.py /workspace/download_adetailer_models.py
-COPY start.sh /workspace/start.sh
+# Copy scripts + startup into ComfyUI folder
+COPY install_maxedout.py /workspace/ComfyUI/install_maxedout.py
+COPY download_core_models.py /workspace/ComfyUI/download_core_models.py
+COPY download_upscale_models.py /workspace/ComfyUI/download_upscale_models.py
+COPY download_adetailer_models.py /workspace/ComfyUI/download_adetailer_models.py
+COPY start.sh /workspace/ComfyUI/start.sh
 RUN chmod +x /workspace/start.sh
 
 # Expose port
 EXPOSE 8188
 
 # Default entrypoint for local Docker (RunPod overrides this)
-CMD ["/start.sh"]
+CMD ["/workspace/ComfyUI/start.sh"]
