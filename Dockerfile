@@ -37,7 +37,7 @@ COPY download_core_models.py /workspace/ComfyUI/download_core_models.py
 COPY download_upscale_models.py /workspace/ComfyUI/download_upscale_models.py
 COPY download_adetailer_models.py /workspace/ComfyUI/download_adetailer_models.py
 COPY start.sh /workspace/ComfyUI/start.sh
-RUN chmod +x /workspace/start.sh
+RUN chmod +x /workspace/ComfyUI/start.sh
 
 # Expose port
 EXPOSE 8188
