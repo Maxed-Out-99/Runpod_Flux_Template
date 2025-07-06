@@ -27,17 +27,14 @@ RUN mkdir -p /workspace/ComfyUI/models/clip \
              /workspace/ComfyUI/models/diffusion_models \
              /workspace/ComfyUI/models/vae
 
-# Download core baked-in models
-RUN wget -O /workspace/ComfyUI/models/clip/t5xxl_fp16.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/clip/t5xxl_fp16.safetensors" --progress=bar:force:noscroll && \
-    wget -O /workspace/ComfyUI/models/clip/clip_l.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/clip/clip_l.safetensors" --progress=bar:force:noscroll && \
-    wget -O /workspace/ComfyUI/models/diffusion_models/flux1-dev-fp8.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/unet/Dev/flux1-dev-fp8.safetensors" --progress=bar:force:noscroll && \
-    wget -O /workspace/ComfyUI/models/vae/ae.safetensors "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs/resolve/main/Flux1/vae/ae.safetensors" --progress=bar:force:noscroll
-
 # Install ComfyUI dependencies
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
-# Copy installer + startup
+# Copy scripts + startup
 COPY install_maxedout.py /workspace/install_maxedout.py
+COPY download_core_models.py /workspace/download_core_models.py
+COPY download_upscale_models.py /workspace/download_upscale_models.py
+COPY download_adetailer_models.py /workspace/download_adetailer_models.py
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
