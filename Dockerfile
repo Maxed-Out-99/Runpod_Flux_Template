@@ -14,11 +14,22 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
     cd /workspace/ComfyUI && \
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
 
+
+# Uninstall any broken version
+RUN pip uninstall -y numpy
+
+# Install Python dependencies
+RUN pip install --no-cache-dir numpy==1.26.4
+
 # Install ComfyUI dependencies
 RUN pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
 
 # Install remaining ComfyUI requirements
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
+
+# Install additional dependencies
+RUN rm -rf /root/.cache/pip
+
 
 # Copy model download scripts
 COPY install_maxedout.py /workspace/ComfyUI/install_maxedout.py
