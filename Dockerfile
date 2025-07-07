@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.8.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Install system dependencies
 RUN apt update && apt install -y \
@@ -18,15 +18,13 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 RUN pip install numpy==1.26.4
 
 # Install PyTorch stack that matches ComfyUI Desktop
-ARG TORCH=2.7.0+cu128
-ARG TORCHVISION=0.22.0+cu128
-ARG TORCHAUDIO=2.7.0+cu128
+ARG TORCH=2.7.0+cu122
+ARG TORCHVISION=0.22.0+cu122
 RUN pip install \
     torch==${TORCH} \
     torchvision==${TORCHVISION} \
     torchaudio==${TORCHAUDIO} \
-    --extra-index-url https://download.pytorch.org/whl/cu128
-
+    --extra-index-url https://download.pytorch.org/whl/cu122
 # Install remaining ComfyUI requirements
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
