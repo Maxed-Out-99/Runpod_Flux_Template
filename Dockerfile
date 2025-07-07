@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.0-runtime-ubuntu22.04
 
 # Install system dependencies
 RUN apt update && apt install -y \
@@ -6,32 +6,31 @@ RUN apt update && apt install -y \
     git lfs install && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install PyTorch
-ARG PYTORCH=2.2.2
-ARG TORCHVISION=0.17.2
-ARG TORCHAUDIO=2.2.2
-ARG CUDA=122
-
-RUN pip install --no-cache-dir --default-timeout=300 --retries=10 \
-    torch==${PYTORCH} torchvision==${TORCHVISION} torchaudio==${TORCHAUDIO} \
-    --extra-index-url https://download.pytorch.org/whl/cu${CUDA}
-
-# Install ComfyUI
+# Pre-set working dir
 WORKDIR /workspace
+
+# Clone ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
     cd /workspace/ComfyUI && \
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
 
-# Create necessary model directories
-RUN mkdir -p /workspace/ComfyUI/models/clip \
-             /workspace/ComfyUI/models/diffusion_models \
-             /workspace/ComfyUI/models/vae
+# Install numpy FIRST to match torch's expectations
+RUN pip install numpy==1.26.4
 
-# Install ComfyUI dependencies
+# Install PyTorch stack that matches ComfyUI Desktop
+ARG TORCH=2.7.0+cu128
+ARG TORCHVISION=0.22.0+cu128
+ARG TORCHAUDIO=2.7.0+cu128
+RUN pip install \
+    torch==${TORCH} \
+    torchvision==${TORCHVISION} \
+    torchaudio==${TORCHAUDIO} \
+    --extra-index-url https://download.pytorch.org/whl/cu128
+
+# Install remaining ComfyUI requirements
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
 
-# Copy scripts + startup
-# Copy scripts + startup into ComfyUI folder
+# Copy model download scripts
 COPY install_maxedout.py /workspace/ComfyUI/install_maxedout.py
 COPY download_core_models.py /workspace/ComfyUI/download_core_models.py
 COPY download_upscale_models.py /workspace/ComfyUI/download_upscale_models.py
@@ -39,8 +38,8 @@ COPY download_adetailer_models.py /workspace/ComfyUI/download_adetailer_models.p
 COPY start.sh /workspace/ComfyUI/start.sh
 RUN chmod +x /workspace/ComfyUI/start.sh
 
-# Expose port
+# Expose default ComfyUI port
 EXPOSE 8188
 
-# Default entrypoint for local Docker (RunPod overrides this)
+# Entrypoint
 CMD ["/workspace/ComfyUI/start.sh"]
