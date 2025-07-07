@@ -1,12 +1,20 @@
+# Base image with CUDA 12.2 and Ubuntu 22.04
 FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+
+# Set build args for flexibility (optional)
+ARG PYTORCH_VERSION=2.2.2
+ARG TORCHVISION_VERSION=0.17.2
 
 # Install system dependencies
 RUN apt update && apt install -y \
-    python3 python3-pip git git-lfs wget && \
+    python3 python3-pip git git-lfs wget curl unzip && \
     git lfs install && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-# Pre-set working dir
+# Upgrade pip tools to known good versions
+RUN pip install --no-cache-dir pip==24.0 setuptools==70.0.0 wheel==0.43.0
+
+# Set working directory
 WORKDIR /workspace
 
 # Clone ComfyUI
@@ -14,37 +22,52 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
     cd /workspace/ComfyUI && \
     git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
 
-# Clone custom nodes (Manager and optionally others)
+# Install ComfyUI base requirements
+RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
+
+# Clone custom nodes and install their requirements
 RUN cd /workspace/ComfyUI/custom_nodes && \
     git clone https://github.com/ltdrdata/ComfyUI-Manager.git && \
-    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
+    git clone https://github.com/rgthree/rgthree-comfy.git && \
+    git clone https://github.com/kijai/ComfyUI-KJNodes.git && \
+    git clone https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git && \
+    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
+    git clone --recursive https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git && \
+    git clone https://github.com/kijai/ComfyUI-Florence2.git && \
+    git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git && \
+    git clone https://github.com/chrisgoringe/cg-use-everywhere.git && \
+    \
+    pip install --no-cache-dir -r ComfyUI-Manager/requirements.txt || echo "No Manager deps" && \
+    pip install --no-cache-dir -r rgthree-comfy/requirements.txt || echo "No rgthree deps" && \
+    pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt || echo "No KJNodes deps" && \
+    pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt || echo "No Impact-Pack deps" && \
+    python3 ComfyUI-Impact-Pack/install.py || true && \
+    pip install --no-cache-dir -r ComfyUI-Impact-Subpack/requirements.txt || echo "No Subpack deps" && \
+    pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt || echo "No controlnet_aux deps" && \
+    pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt || echo "No Florence2 deps" && \
+    pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt || echo "No reactor-node deps" && \
+    mkdir -p /workspace/ComfyUI/models/LLM
 
-# Uninstall any broken version
-RUN pip uninstall -y numpy
+# Force reinstall correct NumPy
+RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 
-# Install Python dependencies
-RUN pip install --no-cache-dir numpy==1.26.4
+# Install PyTorch (with CUDA 12.2 support)
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} --extra-index-url https://download.pytorch.org/whl/cu122
 
-# Install ComfyUI dependencies
-RUN pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
-
-# Install remaining ComfyUI requirements
-RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
-
-# Install additional dependencies
+# Clean up pip cache
 RUN rm -rf /root/.cache/pip
 
+# Copy scripts and workflows
+COPY --chmod=755 start.sh /workspace/ComfyUI/start.sh
+COPY --chmod=644 install_maxedout.py /workspace/ComfyUI/install_maxedout.py
+COPY --chmod=644 download_core_models.py /workspace/ComfyUI/download_core_models.py
+COPY --chmod=644 download_upscale_models.py /workspace/ComfyUI/download_upscale_models.py
+COPY --chmod=644 download_adetailer_models.py /workspace/ComfyUI/download_adetailer_models.py
+COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 
-# Copy model download scripts
-COPY install_maxedout.py /workspace/ComfyUI/install_maxedout.py
-COPY download_core_models.py /workspace/ComfyUI/download_core_models.py
-COPY download_upscale_models.py /workspace/ComfyUI/download_upscale_models.py
-COPY download_adetailer_models.py /workspace/ComfyUI/download_adetailer_models.py
-COPY start.sh /workspace/ComfyUI/start.sh
-COPY workflows /workspace/ComfyUI/workflows
-RUN chmod +x /workspace/ComfyUI/start.sh
-
-# Expose default ComfyUI port
+# Expose ComfyUI default port
 EXPOSE 8188
 
 # Entrypoint
