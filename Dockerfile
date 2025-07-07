@@ -23,7 +23,6 @@ ARG TORCHVISION=0.22.0+cu122
 RUN pip install \
     torch==${TORCH} \
     torchvision==${TORCHVISION} \
-    torchaudio==${TORCHAUDIO} \
     --extra-index-url https://download.pytorch.org/whl/cu122
 # Install remaining ComfyUI requirements
 RUN pip install --retries=10 -r /workspace/ComfyUI/requirements.txt
