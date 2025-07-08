@@ -43,12 +43,18 @@ RUN cd /workspace/ComfyUI/custom_nodes && \
     pip install --no-cache-dir -r rgthree-comfy/requirements.txt || echo "No rgthree deps" && \
     pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt || echo "No KJNodes deps" && \
     pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt || echo "No Impact-Pack deps" && \
-    python3 ComfyUI-Impact-Pack/install.py || true && \
+    python3 ComfyUI-Impact-Pack/install.py && \
     pip install --no-cache-dir -r ComfyUI-Impact-Subpack/requirements.txt || echo "No Subpack deps" && \
     pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt || echo "No controlnet_aux deps" && \
     pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt || echo "No Florence2 deps" && \
     pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt || echo "No reactor-node deps" && \
     mkdir -p /workspace/ComfyUI/models/LLM
+
+RUN apt update && apt install -y libgl1 libglib2.0-0 ffmpeg
+RUN pip install --no-cache-dir \
+    invisible-watermark \
+    onnx onnxruntime \
+    opencv-python
 
 # Force reinstall correct NumPy
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
