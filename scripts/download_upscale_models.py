@@ -1,4 +1,4 @@
-from install_maxedout import download, BASE_URL, MODEL_DIR
+from install_maxedout import download, MODEL_DIR
 
 # (URL path on HF, local save path, SHA256 hash)
 FILES = [

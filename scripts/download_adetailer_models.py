@@ -1,4 +1,4 @@
-from install_maxedout import download, BASE_URL, MODEL_DIR
+from install_maxedout import download, MODEL_DIR
 
 FILES = [
     ("Adetailer/sams/sam_vit_b_01ec64.pth", "sams/sam_vit_b_01ec64.pth", "ec2df62732614e57411cdcf32a23ffdf28910380d03139ee0f4fcbe91eb8c912"),

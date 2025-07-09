@@ -15,7 +15,7 @@ BASE_URL = (
     "https://huggingface.co/MaxedOut/ComfyUI-Starter-Packs"
     f"/resolve/{HF_COMMIT}"
 )
-MODEL_DIR = Path.cwd() / "models"
+MODEL_DIR = Path("/workspace/ComfyUI/models")
 LOG_DIR = Path("install_logs_mxd")
 TEST_MODE = "--test" in sys.argv
 
