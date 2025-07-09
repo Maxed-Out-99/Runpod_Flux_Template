@@ -1,0 +1,16 @@
+{
+    "Comfy.TutorialCompleted": true,
+    "Comfy.Validation.Workflows": true,
+    "Comfy.Canvas.SelectionToolbox": true,
+    "Comfy.Graph.CtrlShiftZoom": true,
+    "Comfy.Graph.CanvasMenu": true,
+    "Comfy.Graph.CanvasInfo": true,
+    "pysssss.SnapToGrid": true,
+    "Comfy.Graph.LinkMarkers": 2,
+    "Comfy.LinkRelease.Action": "no action",
+    "Comfy.NodeBadge.NodeLifeCycleBadgeMode": "None",
+    "Comfy.NodeBadge.NodeSourceBadgeMode": "None",
+    "Comfy.WidgetControlMode": "before",
+    "Comfy.TextareaWidget.Spellcheck": true,
+    "Comfy.ColorPalette": "github"
+}

@@ -78,6 +78,7 @@ RUN rm -rf /root/.cache/pip
 COPY --chmod=755 start.sh /workspace/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
+COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 
 # Expose ComfyUI default port
 EXPOSE 8188
