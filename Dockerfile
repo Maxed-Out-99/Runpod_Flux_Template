@@ -39,6 +39,12 @@ RUN cd /workspace/ComfyUI/custom_nodes && \
     git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git && \
     git clone https://github.com/chrisgoringe/cg-use-everywhere.git && \
     \
+    # New nodes added here 👇
+    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git && \
+    git clone https://github.com/city96/ComfyUI-GGUF.git && \
+    git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git && \
+    git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git && \
+    \
     pip install --no-cache-dir -r ComfyUI-Manager/requirements.txt || echo "No Manager deps" && \
     pip install --no-cache-dir -r rgthree-comfy/requirements.txt || echo "No rgthree deps" && \
     pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt || echo "No KJNodes deps" && \
@@ -48,6 +54,11 @@ RUN cd /workspace/ComfyUI/custom_nodes && \
     pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt || echo "No controlnet_aux deps" && \
     pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt || echo "No Florence2 deps" && \
     pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt || echo "No reactor-node deps" && \
+    \
+    # Custom installs for new nodes 👇
+    pip install --upgrade gguf && \
+    pip install --no-cache-dir -r ComfyUI_PuLID_Flux_ll/requirements.txt && \
+    \
     mkdir -p /workspace/ComfyUI/models/LLM
 
 RUN apt update && apt install -y libgl1 libglib2.0-0 ffmpeg
