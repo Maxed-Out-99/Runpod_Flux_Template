@@ -10,17 +10,25 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
 
-# ⬇️ Replace these with your real values
-CLIENT_ID = os.environ.get("PATREON_CLIENT_ID").strip()
-CLIENT_SECRET = os.environ.get("PATREON_CLIENT_SECRET").strip()
-REDIRECT_URI = os.environ.get("PATREON_REDIRECT_URI", "http://localhost:7860/callback")
+def get_env_var(key, required=True, default=None):
+    value = os.environ.get(key)
+    if value is None:
+        if required:
+            raise RuntimeError(f"❌ Missing required environment variable: {key}")
+        return default
+    return value.strip()
+
+# ✅ Use safe env var access
+CLIENT_ID = get_env_var("PATREON_CLIENT_ID")
+CLIENT_SECRET = get_env_var("PATREON_CLIENT_SECRET")
+REDIRECT_URI = get_env_var("PATREON_REDIRECT_URI", required=False, default="http://localhost:7860/callback")
 
 CAMPAIGN_ID = "13913714"  # You’ll get this in Step 3 below
 REQUIRED_TIER = "⚡ Power User"  # The exact name of the tier
 
 def download_flux_workflow():
-
-    hf_token = os.environ.get("HF_TOKEN").strip()
+    
+    hf_token = get_env_var("HF_TOKEN")
     if not hf_token:
         return "❌ Hugging Face token not found. Set HF_TOKEN in .env", 500
 

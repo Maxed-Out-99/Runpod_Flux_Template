@@ -1,7 +1,8 @@
 import torch
-import torch.nn.functional as F
-import threading
 from pathlib import Path
+import folder_paths
+import comfy.sd
+
 
 from .install_maxedout import get_model_files, download, MODEL_DIR
 

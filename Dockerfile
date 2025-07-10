@@ -87,7 +87,7 @@ COPY --chmod=644 auth/success.html /workspace/auth/success.html
 COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
 COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
 
-RUN pip install -r auth/requirements.txt
+RUN pip install --no-cache-dir -r auth/requirements.txt
 
 # Expose ComfyUI default port
 EXPOSE 8188

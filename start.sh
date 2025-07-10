@@ -11,7 +11,7 @@ else
 fi
 
 echo "🔐 Starting Patreon unlock server..."
-python3 /workspace/app.py &
+FLASK_RUN_PORT=7860 python3 /workspace/auth/app.py &
 
 # Then start ComfyUI like normal
 echo "🚀 Starting ComfyUI..."
