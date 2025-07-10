@@ -79,6 +79,8 @@ COPY --chmod=755 start.sh /workspace/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
+COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
+
 
 # Expose ComfyUI default port
 EXPOSE 8188
