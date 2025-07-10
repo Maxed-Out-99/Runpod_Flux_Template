@@ -1,0 +1,14 @@
+# Mine
+.env
+/workspace/.flux_token
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python stuff
+__pycache__/
+*.pyc
+
+# Logs
+*.log

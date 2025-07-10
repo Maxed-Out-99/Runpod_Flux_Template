@@ -81,9 +81,18 @@ COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
 
+# Copy Patreon auth files
+COPY --chmod=755 auth/app.py /workspace/auth/app.py
+COPY --chmod=644 auth/success.html /workspace/auth/success.html
+COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
+COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
+
+RUN pip install -r auth/requirements.txt
 
 # Expose ComfyUI default port
 EXPOSE 8188
+# Expose Patreon unlock server port
+EXPOSE 7860
 
 # Entrypoint
 CMD ["/workspace/start.sh"]

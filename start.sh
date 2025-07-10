@@ -10,5 +10,9 @@ else
     echo "✅ Core FLUX models already present."
 fi
 
+echo "🔐 Starting Patreon unlock server..."
+python3 /workspace/app.py &
+
+# Then start ComfyUI like normal
 echo "🚀 Starting ComfyUI..."
 exec python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 --enable-cors
