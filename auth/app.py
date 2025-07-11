@@ -64,10 +64,18 @@ def download_flux_workflow():
     print(f"📦 Saved to: {output_path}")
     return "✅ File downloaded"
 
+@app.errorhandler(404)
+def not_found(e):
+    return redirect("/")
 
 @app.route("/success")
 def success():
+    print("✅ Success page reached.")
     return send_file("/workspace/auth/success.html")
+
+@app.route("/")
+def index():
+    return redirect("/auth")
 
 # Step 1: Start auth
 @app.route("/auth")
