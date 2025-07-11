@@ -75,7 +75,17 @@ def success():
 
 @app.route("/")
 def index():
-    return redirect("/auth")
+    return """
+    <html>
+        <head>
+            <meta http-equiv="refresh" content="7; url=/auth" />
+        </head>
+        <body style="font-family:sans-serif;text-align:center;padding-top:60px">
+            <h1>⚡ Unlocking Mega Flux...</h1>
+            <p>Warming up the service. You’ll be redirected shortly.</p>
+        </body>
+    </html>
+    """
 
 # Step 1: Start auth
 @app.route("/auth")
