@@ -27,13 +27,19 @@ CAMPAIGN_ID = "13913714"  # You’ll get this in Step 3 below
 REQUIRED_TIER = "⚡ Power User"  # The exact name of the tier
 
 def download_flux_workflow():
-    
+    print("📦 Starting Power User workflow download...")
+
     hf_token = get_env_var("HF_TOKEN")
     if not hf_token:
-        return "❌ Hugging Face token not found. Set HF_TOKEN in .env", 500
+        print("❌ Hugging Face token not found.")
+        return "❌ HF_TOKEN not set.", 500
 
     url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/workflows/Mega%20Flux%20v1.json"
     output_path = "/workspace/Mega Flux v1.json"
+
+    print(f"🔗 Download URL: {url}")
+    print(f"📁 Target path: {output_path}")
+    print("🔐 Using Hugging Face token.")
 
     command = [
         "curl", "-L",
@@ -43,12 +49,21 @@ def download_flux_workflow():
     ]
 
     result = subprocess.run(command, capture_output=True, text=True)
+
     if result.returncode != 0:
-        print("❌ Download failed:", result.stderr)
+        print("❌ CURL failed to download file.")
+        print("📄 STDERR:", result.stderr.strip())
+        print("📄 STDOUT:", result.stdout.strip())
         return "❌ Failed to download Power User file.", 500
 
-    print("✅ Power User file downloaded:", output_path)
+    if not os.path.exists(output_path):
+        print("⚠️ CURL completed but file not found at target path.")
+        return "❌ File not saved.", 500
+
+    print("✅ Power User file downloaded successfully.")
+    print(f"📦 Saved to: {output_path}")
     return "✅ File downloaded"
+
 
 @app.route("/success")
 def success():
@@ -125,8 +140,15 @@ def callback():
                 if name == REQUIRED_TIER:
                     with open("/workspace/.flux_token", "w") as f:
                         f.write(datetime.utcnow().isoformat())
-                    download_flux_workflow()
+                    result = download_flux_workflow()
+                    print("🧪 download_flux_workflow() result:", result)
+
+                    # If it's a tuple, return it as a Flask response (error)
+                    if isinstance(result, tuple):
+                        return result
+
                     return redirect("/success")
+
 
     return send_file("/workspace/auth/fail.html"), 403
 
