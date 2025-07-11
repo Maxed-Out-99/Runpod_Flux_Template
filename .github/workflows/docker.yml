@@ -14,18 +14,19 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # ← this was missing!
+      uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
+    # ❌ Removed cache to prevent "no space left on device"
+    # - name: Cache Docker layers
+    #   uses: actions/cache@v4
+    #   with:
+    #     path: /tmp/.buildx-cache
+    #     key: ${{ runner.os }}-buildx-${{ github.sha }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-buildx-
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -33,5 +34,4 @@ jobs:
         context: .
         push: true
         tags: ghcr.io/maxed-out-99/runpod_flux_template:latest
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
+        no-cache: true  # ✅ Force clean build, avoid bloating the runner
