@@ -13,6 +13,9 @@ jobs:
       packages: write
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # ← this was missing!
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -20,7 +23,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.ref_name }}
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
 
