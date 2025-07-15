@@ -21,8 +21,8 @@ def get_env_var(key, required=True, default=None):
 # ✅ Use safe env var access
 CLIENT_ID = get_env_var("PATREON_CLIENT_ID")
 CLIENT_SECRET = get_env_var("PATREON_CLIENT_SECRET")
-REDIRECT_URI = get_env_var("PATREON_REDIRECT_URI", required=False, default="http://localhost:7860/callback")
-
+REDIRECT_URI = get_env_var("PATREON_REDIRECT_URI")  # required=True by default
+print("Redirect URI:", REDIRECT_URI)
 CAMPAIGN_ID = "13913714"  # You’ll get this in Step 3 below
 REQUIRED_TIER = "⚡ Power User"  # The exact name of the tier
 
