@@ -11,8 +11,7 @@ else
 fi
 
 echo "🔐 Starting Patreon unlock server..."
-(sleep 15 && FLASK_RUN_PORT=7860 python3 /workspace/auth/app.py) &
+python3 /workspace/auth/app.py > /workspace/unlock.log 2>&1 &
 
-# Then start ComfyUI like normal
 echo "🚀 Starting ComfyUI..."
 exec python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 --enable-cors

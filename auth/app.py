@@ -94,6 +94,7 @@ def auth():
 
 # Step 2: Handle callback and check membership
 @app.route("/callback")
+@app.route("/callback/")
 def callback():
 
     code = request.args.get("code")
