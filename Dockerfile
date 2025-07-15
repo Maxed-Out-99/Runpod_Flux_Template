@@ -11,6 +11,14 @@ RUN apt update && apt install -y \
     git lfs install && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
+# Install build tools for insightface & others
+RUN apt update && apt install -y \
+    build-essential \
+    cmake \
+    libgl1 \
+    ninja-build \
+    && rm -rf /var/lib/apt/lists/*
+
 # Upgrade pip tools to known good versions
 RUN pip install --no-cache-dir pip==24.0 setuptools==70.0.0 wheel==0.43.0
 
@@ -24,6 +32,11 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 
 # Install ComfyUI base requirements
 RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
+
+# Install insightface directly
+RUN pip install --no-cache-dir insightface==0.7.3
+RUN pip install --no-cache-dir --use-pep517 facexlib
+
 
 # Switch to ComfyUI custom_nodes directory
 WORKDIR /workspace/ComfyUI/custom_nodes
@@ -94,7 +107,7 @@ COPY --chmod=644 auth/success.html /workspace/auth/success.html
 COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
 COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
 
-RUN pip install --no-cache-dir -r auth/requirements.txt
+RUN pip install --no-cache-dir -r /workspace/auth/requirements.txt
 
 # Expose ComfyUI default port
 EXPOSE 8188
