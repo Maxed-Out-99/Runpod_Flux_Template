@@ -95,11 +95,14 @@ RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVIS
 RUN rm -rf /root/.cache/pip
 
 # Copy scripts and workflows
-COPY --chmod=755 start.sh /workspace/start.sh
+COPY --chmod=755 start.sh /opt/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
+
+# (Optional) Community Cloud fallback shim (this only survives if no volume is mounted)
+RUN echo '#!/bin/bash\n/opt/start.sh' > /workspace/start.sh && chmod +x /workspace/start.sh
 
 # Copy Patreon auth files
 COPY --chmod=755 auth/app.py /workspace/auth/app.py
@@ -115,4 +118,4 @@ EXPOSE 8188
 EXPOSE 7860
 
 # Entrypoint
-CMD ["/workspace/start.sh"]
+CMD ["/opt/start.sh"]
