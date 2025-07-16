@@ -93,18 +93,20 @@ def index():
 # Step 1: Start auth - THIS IS THE MAIN CHANGE
 @app.route("/auth")
 def auth():
-    # Dynamically determine this pod's unique callback URL
-    # request.host will be like '<pod-id>-7860.proxy.runpod.net'
-    pod_specific_callback = f"https://{request.host}/callback"
+    # Get the pod ID and port number reliably from RunPod's environment variables
+    pod_id = get_env_var("RUNPOD_POD_ID")
+    port = get_env_var("RUNPOD_PORT_7860_TCP_PORT", required=False, default="7860") # Default to 7860 if not found
 
-    # The redirect_uri sent to Patreon is now your STATIC helper page.
-    # The pod's UNIQUE URL is passed in the 'state' parameter.
+    # Construct the reliable public proxy URL
+    pod_specific_callback = f"https://{pod_id}-{port}.proxy.runpod.net/callback"
+
+    # The rest of the function remains the same
     auth_url = (
         f"https://www.patreon.com/oauth2/authorize?response_type=code"
         f"&client_id={CLIENT_ID}"
         f"&redirect_uri={PATREON_HELPER_CALLBACK}"
         f"&scope=identity%20identity.memberships"
-        f"&state={pod_specific_callback}" # <-- Pass unique URL in state
+        f"&state={pod_specific_callback}"
     )
     return redirect(auth_url)
 
