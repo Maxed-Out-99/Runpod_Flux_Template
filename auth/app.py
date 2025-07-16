@@ -170,6 +170,7 @@ def callback():
                 ).json()
 
                 name = tier_info.get("data", {}).get("attributes", {}).get("title", "")
+                print(f"-> Comparing API name '{name}' with required name '{REQUIRED_TIER}'")
                 print(f"🧪 Found tier: '{name}'")
 
                 if name == REQUIRED_TIER:
