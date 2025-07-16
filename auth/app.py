@@ -10,7 +10,12 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
 
+# THIS IS YOUR NEW STATIC HELPER URL FROM STEP 2
+# Set it as an environment variable in your RunPod Template for best practice
+PATREON_HELPER_CALLBACK = os.environ.get("PATREON_HELPER_CALLBACK", "https://maxed-out-99.github.io/patreon-auth/callback.html")
+
 def get_env_var(key, required=True, default=None):
+    # ... (rest of the function is the same) ...
     value = os.environ.get(key)
     if value is None:
         if required:
@@ -21,10 +26,8 @@ def get_env_var(key, required=True, default=None):
 # ✅ Use safe env var access
 CLIENT_ID = get_env_var("PATREON_CLIENT_ID")
 CLIENT_SECRET = get_env_var("PATREON_CLIENT_SECRET")
-REDIRECT_URI = get_env_var("PATREON_REDIRECT_URI")  # required=True by default
-print("Redirect URI:", REDIRECT_URI)
-CAMPAIGN_ID = "13913714"  # You’ll get this in Step 3 below
-REQUIRED_TIER = "⚡ Power User"  # The exact name of the tier
+CAMPAIGN_ID = "13913714"
+REQUIRED_TIER = "⚡ Power User"
 
 def download_flux_workflow():
     print("📦 Starting Power User workflow download...")
@@ -87,10 +90,23 @@ def index():
     </html>
     """
 
-# Step 1: Start auth
+# Step 1: Start auth - THIS IS THE MAIN CHANGE
 @app.route("/auth")
 def auth():
-    return redirect(f"https://www.patreon.com/oauth2/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=identity%20identity.memberships")
+    # Dynamically determine this pod's unique callback URL
+    # request.host will be like '<pod-id>-7860.proxy.runpod.net'
+    pod_specific_callback = f"https://{request.host}/callback"
+
+    # The redirect_uri sent to Patreon is now your STATIC helper page.
+    # The pod's UNIQUE URL is passed in the 'state' parameter.
+    auth_url = (
+        f"https://www.patreon.com/oauth2/authorize?response_type=code"
+        f"&client_id={CLIENT_ID}"
+        f"&redirect_uri={PATREON_HELPER_CALLBACK}"
+        f"&scope=identity%20identity.memberships"
+        f"&state={pod_specific_callback}" # <-- Pass unique URL in state
+    )
+    return redirect(auth_url)
 
 # Step 2: Handle callback and check membership
 @app.route("/callback")
@@ -114,20 +130,21 @@ def callback():
     if not code:
         return "No code provided", 400
 
-    # Exchange code for access token
+    # Exchange code for access token using the static helper URL
     token_resp = requests.post("https://www.patreon.com/api/oauth2/token", data={
         "code": code,
         "grant_type": "authorization_code",
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
-        "redirect_uri": REDIRECT_URI
+        "redirect_uri": PATREON_HELPER_CALLBACK # <-- This is the only change you needed
     }).json()
 
     access_token = token_resp.get("access_token")
     if not access_token:
+        print("❌ Failed to get access token. Patreon response:", token_resp)
         return "Failed to get access token", 400
 
-    # Get identity and memberships
+    # Get identity and memberships (This part remains the same)
     user_resp = requests.get(
         "https://www.patreon.com/api/oauth2/v2/identity?include=memberships&fields[member]=currently_entitled_tiers&fields[user]=full_name",
         headers={"Authorization": f"Bearer {access_token}"}
@@ -162,7 +179,6 @@ def callback():
                     result = download_flux_workflow()
                     print("🧪 download_flux_workflow() result:", result)
 
-                    # If it's a tuple, return it as a Flask response (error)
                     if isinstance(result, tuple):
                         return result
 
