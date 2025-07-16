@@ -2,11 +2,6 @@
 set -e
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
-# 🌐 Dynamically determine the correct redirect URI
-HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname || hostname)
-export PATREON_REDIRECT_URI="https://${HOSTNAME}:7860/callback"
-echo "🔁 Using PATREON_REDIRECT_URI=$PATREON_REDIRECT_URI"
-
 # 📦 Install core models once
 INSTALL_LOCK="/workspace/.flux_installed"
 
