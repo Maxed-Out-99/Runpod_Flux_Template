@@ -16,6 +16,7 @@ RUN apt update && apt install -y \
     build-essential \
     cmake \
     libgl1 \
+    ffmpeg \
     ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
@@ -79,7 +80,6 @@ RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt || echo "No c
 # Ensure Florence2 model directory exists
 RUN mkdir -p /workspace/ComfyUI/models/LLM
 
-RUN apt update && apt install -y libgl1 libglib2.0-0 ffmpeg
 RUN pip install --no-cache-dir \
     invisible-watermark \
     onnx onnxruntime \
@@ -100,9 +100,6 @@ COPY --chmod=755 scripts/ /workspace/scripts/
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
-
-# (Optional) Community Cloud fallback shim (this only survives if no volume is mounted)
-RUN echo '#!/bin/bash\n/opt/start.sh' > /workspace/start.sh && chmod +x /workspace/start.sh
 
 # Copy Patreon auth files
 COPY --chmod=755 auth/app.py /workspace/auth/app.py
