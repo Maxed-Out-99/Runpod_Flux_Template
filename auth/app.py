@@ -154,11 +154,8 @@ def callback():
 
     memberships = user_resp.get("included", [])
     if not memberships:
-        print("🧪 No memberships returned. Running in test mode.")
-        with open("/workspace/.flux_token", "w") as f:
-            f.write(datetime.utcnow().isoformat())
-        download_flux_workflow()
-        return "✅ Access granted (test mode — no membership)."
+        print("❌ User is not a member of the campaign. Denying access.")
+        return send_file("/workspace/auth/fail.html"), 403
 
     for membership in memberships:
         if membership["type"] == "member":
