@@ -38,6 +38,23 @@ RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.t
 RUN pip install --no-cache-dir insightface==0.7.3
 RUN pip install --no-cache-dir --use-pep517 facexlib
 
+# Clone all custom node repositories
+RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git comfyui-manager && \
+    git clone https://github.com/rgthree/rgthree-comfy.git && \
+    git clone https://github.com/kijai/ComfyUI-KJNodes.git && \
+    git clone https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git && \
+    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
+    git clone --recursive https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git && \
+    git clone https://github.com/kijai/ComfyUI-Florence2.git && \
+    git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git && \
+    git clone https://github.com/chrisgoringe/cg-use-everywhere.git && \
+    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git && \
+    git clone https://github.com/city96/ComfyUI-GGUF.git && \
+    git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git && \
+    git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git && \
+    git clone https://github.com/crystian/ComfyUI-Crystools.git
 
 # Install Python dependencies for nodes that have them, one by one.
 RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
