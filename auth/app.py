@@ -114,7 +114,6 @@ def auth():
 @app.route("/callback")
 @app.route("/callback/")
 def callback():
-
     code = request.args.get("code")
     if os.path.exists("/workspace/.flux_token"):
         with open("/workspace/.flux_token") as f:
@@ -123,12 +122,10 @@ def callback():
                 if datetime.utcnow() - ts <= timedelta(hours=24):
                     print("✅ Already unlocked within last 24h")
                     return redirect("/success")
-                else:
-                    print("⌛ .flux_token expired")
-                    os.remove("/workspace/.flux_token")
             except Exception as e:
-                print("⚠️ Couldn't parse timestamp:", e)
+                print(f"⚠️ Couldn't parse timestamp: {e}")
                 os.remove("/workspace/.flux_token")
+
     if not code:
         return "No code provided", 400
 
@@ -142,43 +139,50 @@ def callback():
 
     access_token = token_resp.get("access_token")
     if not access_token:
-        print("❌ Failed to get access token. Patreon response:", token_resp)
+        print(f"❌ Failed to get access token. Patreon response: {token_resp}")
         return "Failed to get access token", 400
 
-    user_resp = requests.get(
-        "https://www.patreon.com/api/oauth2/v2/identity?include=memberships&fields[member]=currently_entitled_tiers&fields[user]=full_name",
-        headers={"Authorization": f"Bearer {access_token}"}
-    ).json()
-
-    # ADD THIS LINE TO SEE THE RAW API RESPONSE
+    api_url = (
+        "https://www.patreon.com/api/oauth2/v2/identity"
+        "?include=memberships.currently_entitled_tiers"
+        "&fields[user]=full_name"
+        "&fields[tier]=title"
+    )
+    user_resp = requests.get(api_url, headers={"Authorization": f"Bearer {access_token}"}).json()
     print(f"🕵️ Patreon API Response: {user_resp}")
 
-    memberships = user_resp.get("included", [])
-    if not memberships:
-        print("❌ User is not a member of the campaign. Denying access.")
+    included_data = user_resp.get('included', [])
+    if not included_data:
+        print("❌ No 'included' data found in API response. Denying access.")
         return send_file("/workspace/auth/fail.html"), 403
 
+    # Create a simple lookup map of all tiers by their ID
+    tiers_by_id = {item['id']: item['attributes'] for item in included_data if item['type'] == 'tier'}
+
+    # Find all of the user's memberships in the included data
+    memberships = [item for item in included_data if item['type'] == 'member']
+
     for membership in memberships:
-        if membership["type"] == "member":
-            tiers = membership["relationships"].get("currently_entitled_tiers", {}).get("data", [])
-            for tier in tiers:
-                tier_id = tier["id"]
-                tier_info = requests.get(
-                    f"https://www.patreon.com/api/oauth2/v2/tiers/{tier_id}",
-                    headers={"Authorization": f"Bearer {access_token}"}
-                ).json()
-                name = tier_info.get("data", {}).get("attributes", {}).get("title", "")
-                print(f"-> Comparing API name '{name}' with required name '{REQUIRED_TIER}'")
-                print(f"🧪 Found tier: '{name}'")
-                if name == REQUIRED_TIER:
+        # Get the IDs of the tiers for this specific membership
+        entitled_tiers_data = membership.get('relationships', {}).get('currently_entitled_tiers', {}).get('data', [])
+
+        for tier_summary in entitled_tiers_data:
+            tier_id = tier_summary['id']
+
+            # Look up the full tier object in our map
+            if tier_id in tiers_by_id:
+                tier_title = tiers_by_id[tier_id].get('title', '')
+                print(f"-> Comparing API name '{tier_title}' with required name '{REQUIRED_TIER}'")
+
+                if tier_title == REQUIRED_TIER:
+                    print("✅ Power User tier found!")
                     with open("/workspace/.flux_token", "w") as f:
                         f.write(datetime.utcnow().isoformat())
-                    result = download_flux_workflow()
-                    print("🧪 download_flux_workflow() result:", result)
-                    if isinstance(result, tuple):
-                        return result
+
+                    download_flux_workflow()
                     return redirect("/success")
 
+    print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
 
 if __name__ == "__main__":
