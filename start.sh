@@ -15,7 +15,7 @@ export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
 # 🔐 Start Patreon unlock server
 echo "🔐 Starting Patreon unlock server..."
-python3 /workspace/auth/app.py &
+python3 /workspace/auth/app.py > /workspace/unlock.log 2>&1 &
 
 # 🚀 Launch ComfyUI
 echo "🚀 Starting ComfyUI..."

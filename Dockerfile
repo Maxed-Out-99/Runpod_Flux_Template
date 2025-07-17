@@ -57,7 +57,7 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git comfyui-manager &&
     git clone https://github.com/crystian/ComfyUI-Crystools.git
 
 # Install Python dependencies for nodes that have them, one by one.
-# RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
+RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
 # RUN pip install --no-cache-dir -r rgthree-comfy/requirements.txt
 # RUN pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt
 # RUN pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt
