@@ -57,7 +57,8 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git /workspace/ComfyUI
     git clone https://github.com/city96/ComfyUI-GGUF.git /workspace/ComfyUI/custom_nodes/ComfyUI-GGUF && \
     git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git /workspace/ComfyUI/custom_nodes/ComfyUI-DepthAnythingV2 && \
     git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git /workspace/ComfyUI/custom_nodes/ComfyUI_PuLID_Flux_ll && \
-    git clone https://github.com/crystian/ComfyUI-Crystools.git /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools
+    git clone https://github.com/crystian/ComfyUI-Crystools.git /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools \
+    && find /workspace/ComfyUI/custom_nodes/ -type d -name ".git" -exec rm -rf {} +
 
 # Install Python dependencies for nodes that have them, one by one.
 RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
