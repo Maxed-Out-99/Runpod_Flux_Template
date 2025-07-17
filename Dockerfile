@@ -57,21 +57,21 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git comfyui-manager &&
     git clone https://github.com/crystian/ComfyUI-Crystools.git
 
 # Install Python dependencies for nodes that have them, one by one.
-RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
-RUN pip install --no-cache-dir -r rgthree-comfy/requirements.txt
-RUN pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt
-RUN pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt
-RUN python3 ComfyUI-Impact-Pack/install.py
-RUN pip install --no-cache-dir -r ComfyUI-Impact-Subpack/requirements.txt
-RUN pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt
-RUN pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt
-RUN pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt
-RUN python3 comfyui-reactor-node/install.py
-RUN pip install --no-cache-dir -r ComfyUI-GGUF/requirements.txt
-RUN pip install --upgrade --no-cache-dir gguf
-RUN pip install --no-cache-dir -r ComfyUI-DepthAnythingV2/requirements.txt
-RUN pip install --no-cache-dir -r ComfyUI_PuLID_Flux_ll/requirements.txt
-RUN pip install --no-cache-dir -r ComfyUI-Crystools/requirements.txt
+# RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
+# RUN pip install --no-cache-dir -r rgthree-comfy/requirements.txt
+# RUN pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt
+# RUN pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt
+# RUN python3 ComfyUI-Impact-Pack/install.py
+# RUN pip install --no-cache-dir -r ComfyUI-Impact-Subpack/requirements.txt
+# RUN pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt
+# RUN pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt
+# RUN pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt
+# RUN python3 comfyui-reactor-node/install.py
+# RUN pip install --no-cache-dir -r ComfyUI-GGUF/requirements.txt
+# RUN pip install --upgrade --no-cache-dir gguf
+# RUN pip install --no-cache-dir -r ComfyUI-DepthAnythingV2/requirements.txt
+# RUN pip install --no-cache-dir -r ComfyUI_PuLID_Flux_ll/requirements.txt
+# RUN pip install --no-cache-dir -r ComfyUI-Crystools/requirements.txt
 
 RUN pip install --no-cache-dir \
     invisible-watermark \
