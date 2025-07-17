@@ -132,13 +132,12 @@ def callback():
     if not code:
         return "No code provided", 400
 
-    # Exchange code for access token using the static helper URL
     token_resp = requests.post("https://www.patreon.com/api/oauth2/token", data={
         "code": code,
         "grant_type": "authorization_code",
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
-        "redirect_uri": PATREON_HELPER_CALLBACK # <-- This is the only change you needed
+        "redirect_uri": PATREON_HELPER_CALLBACK
     }).json()
 
     access_token = token_resp.get("access_token")
@@ -146,11 +145,13 @@ def callback():
         print("❌ Failed to get access token. Patreon response:", token_resp)
         return "Failed to get access token", 400
 
-    # Get identity and memberships (This part remains the same)
     user_resp = requests.get(
         "https://www.patreon.com/api/oauth2/v2/identity?include=memberships&fields[member]=currently_entitled_tiers&fields[user]=full_name",
         headers={"Authorization": f"Bearer {access_token}"}
     ).json()
+
+    # ADD THIS LINE TO SEE THE RAW API RESPONSE
+    print(f"🕵️ Patreon API Response: {user_resp}")
 
     memberships = user_resp.get("included", [])
     if not memberships:
@@ -162,28 +163,21 @@ def callback():
             tiers = membership["relationships"].get("currently_entitled_tiers", {}).get("data", [])
             for tier in tiers:
                 tier_id = tier["id"]
-
-                # Lookup tier name
                 tier_info = requests.get(
                     f"https://www.patreon.com/api/oauth2/v2/tiers/{tier_id}",
                     headers={"Authorization": f"Bearer {access_token}"}
                 ).json()
-
                 name = tier_info.get("data", {}).get("attributes", {}).get("title", "")
                 print(f"-> Comparing API name '{name}' with required name '{REQUIRED_TIER}'")
                 print(f"🧪 Found tier: '{name}'")
-
                 if name == REQUIRED_TIER:
                     with open("/workspace/.flux_token", "w") as f:
                         f.write(datetime.utcnow().isoformat())
                     result = download_flux_workflow()
                     print("🧪 download_flux_workflow() result:", result)
-
                     if isinstance(result, tuple):
                         return result
-
                     return redirect("/success")
-
 
     return send_file("/workspace/auth/fail.html"), 403
 

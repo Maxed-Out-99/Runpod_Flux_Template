@@ -38,40 +38,43 @@ RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.t
 RUN pip install --no-cache-dir insightface==0.7.3
 RUN pip install --no-cache-dir --use-pep517 facexlib
 
-# Clone all custom node repositories
-RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git comfyui-manager && \
-    git clone https://github.com/rgthree/rgthree-comfy.git && \
-    git clone https://github.com/kijai/ComfyUI-KJNodes.git && \
-    git clone https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git && \
-    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
-    git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git && \
-    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git && \
-    git clone --recursive https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git && \
-    git clone https://github.com/kijai/ComfyUI-Florence2.git && \
-    git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git && \
-    git clone https://github.com/chrisgoringe/cg-use-everywhere.git && \
-    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git && \
-    git clone https://github.com/city96/ComfyUI-GGUF.git && \
-    git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git && \
-    git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git && \
-    git clone https://github.com/crystian/ComfyUI-Crystools.git
+# Install PyTorch (with CUDA 12.2 support)
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} --extra-index-url https://download.pytorch.org/whl/cu122
+
+# Clone all custom node repositories into ComfyUI/custom_nodes
+RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git /workspace/ComfyUI/custom_nodes/ComfyUI-Manager && \
+    git clone https://github.com/rgthree/rgthree-comfy.git /workspace/ComfyUI/custom_nodes/rgthree-comfy && \
+    git clone https://github.com/kijai/ComfyUI-KJNodes.git /workspace/ComfyUI/custom_nodes/ComfyUI-KJNodes && \
+    git clone https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Subpack && \
+    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git /workspace/ComfyUI/custom_nodes/comfyui_controlnet_aux && \
+    git clone --recursive https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git /workspace/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale && \
+    git clone https://github.com/kijai/ComfyUI-Florence2.git /workspace/ComfyUI/custom_nodes/ComfyUI-Florence2 && \
+    git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node && \
+    git clone https://github.com/chrisgoringe/cg-use-everywhere.git /workspace/ComfyUI/custom_nodes/cg-use-everywhere && \
+    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git /workspace/ComfyUI/custom_nodes/ComfyUI-Custom-Scripts && \
+    git clone https://github.com/city96/ComfyUI-GGUF.git /workspace/ComfyUI/custom_nodes/ComfyUI-GGUF && \
+    git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git /workspace/ComfyUI/custom_nodes/ComfyUI-DepthAnythingV2 && \
+    git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git /workspace/ComfyUI/custom_nodes/ComfyUI_PuLID_Flux_ll && \
+    git clone https://github.com/crystian/ComfyUI-Crystools.git /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools
 
 # Install Python dependencies for nodes that have them, one by one.
-# RUN pip install --no-cache-dir -r comfyui-manager/requirements.txt
-RUN pip install --no-cache-dir -r rgthree-comfy/requirements.txt
-# RUN pip install --no-cache-dir -r ComfyUI-KJNodes/requirements.txt
-# RUN pip install --no-cache-dir -r ComfyUI-Impact-Pack/requirements.txt
-# RUN python3 ComfyUI-Impact-Pack/install.py
-# RUN pip install --no-cache-dir -r ComfyUI-Impact-Subpack/requirements.txt
-# RUN pip install --no-cache-dir -r comfyui_controlnet_aux/requirements.txt
-# RUN pip install --no-cache-dir -r ComfyUI-Florence2/requirements.txt
-# RUN pip install --no-cache-dir -r comfyui-reactor-node/requirements.txt
-# RUN python3 comfyui-reactor-node/install.py
-# RUN pip install --no-cache-dir -r ComfyUI-GGUF/requirements.txt
-# RUN pip install --upgrade --no-cache-dir gguf
-# RUN pip install --no-cache-dir -r ComfyUI-DepthAnythingV2/requirements.txt
-# RUN pip install --no-cache-dir -r ComfyUI_PuLID_Flux_ll/requirements.txt
-# RUN pip install --no-cache-dir -r ComfyUI-Crystools/requirements.txt
+RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/rgthree-comfy/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack/requirements.txt && \
+    python3 /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack/install.py && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Subpack/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Florence2/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt && \
+    python3 /workspace/ComfyUI/custom_nodes/comfyui-reactor-node/install.py && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-GGUF/requirements.txt && \
+    pip install --upgrade --no-cache-dir gguf && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-DepthAnythingV2/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI_PuLID_Flux_ll/requirements.txt && \
+    pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools/requirements.txt
 
 RUN pip install --no-cache-dir \
     invisible-watermark \
@@ -80,9 +83,6 @@ RUN pip install --no-cache-dir \
 
 # Force reinstall correct NumPy
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
-
-# Install PyTorch (with CUDA 12.2 support)
-RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} --extra-index-url https://download.pytorch.org/whl/cu122
 
 # Clean up pip cache
 RUN rm -rf /root/.cache/pip
@@ -106,6 +106,12 @@ RUN pip install --no-cache-dir -r /workspace/auth/requirements.txt
 EXPOSE 8188
 # Expose Patreon unlock server port
 EXPOSE 7860
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD \
+  curl -f http://localhost:8188 || exit 1
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD \
+  curl -f http://localhost:8188 || curl -f http://localhost:7860 || exit 1
 
 # Entrypoint
 CMD ["/opt/start.sh"]
