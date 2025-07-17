@@ -41,42 +41,6 @@ RUN pip install --no-cache-dir --use-pep517 facexlib
 # Install PyTorch (with CUDA 12.2 support)
 RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} --extra-index-url https://download.pytorch.org/whl/cu122
 
-# Clone all custom node repositories into ComfyUI/custom_nodes
-RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git /workspace/ComfyUI/custom_nodes/ComfyUI-Manager && \
-    git clone https://github.com/rgthree/rgthree-comfy.git /workspace/ComfyUI/custom_nodes/rgthree-comfy && \
-    git clone https://github.com/kijai/ComfyUI-KJNodes.git /workspace/ComfyUI/custom_nodes/ComfyUI-KJNodes && \
-    git clone https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut && \
-    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack && \
-    git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Subpack && \
-    git clone https://github.com/Fannovel16/comfyui_controlnet_aux.git /workspace/ComfyUI/custom_nodes/comfyui_controlnet_aux && \
-    git clone --recursive https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git /workspace/ComfyUI/custom_nodes/ComfyUI_UltimateSDUpscale && \
-    git clone https://github.com/kijai/ComfyUI-Florence2.git /workspace/ComfyUI/custom_nodes/ComfyUI-Florence2 && \
-    git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node && \
-    git clone https://github.com/chrisgoringe/cg-use-everywhere.git /workspace/ComfyUI/custom_nodes/cg-use-everywhere && \
-    git clone https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git /workspace/ComfyUI/custom_nodes/ComfyUI-Custom-Scripts && \
-    git clone https://github.com/city96/ComfyUI-GGUF.git /workspace/ComfyUI/custom_nodes/ComfyUI-GGUF && \
-    git clone https://github.com/kijai/ComfyUI-DepthAnythingV2.git /workspace/ComfyUI/custom_nodes/ComfyUI-DepthAnythingV2 && \
-    git clone https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git /workspace/ComfyUI/custom_nodes/ComfyUI_PuLID_Flux_ll && \
-    git clone https://github.com/crystian/ComfyUI-Crystools.git /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools \
-    && find /workspace/ComfyUI/custom_nodes/ -type d -name ".git" -exec rm -rf {} +
-
-# Install Python dependencies for nodes that have them, one by one.
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/rgthree-comfy/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack/requirements.txt
-RUN python3 /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Pack/install.py
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Impact-Subpack/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/comfyui_controlnet_aux/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Florence2/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/comfyui-reactor-node/requirements.txt
-RUN python3 /workspace/ComfyUI/custom_nodes/comfyui-reactor-node/install.py
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-GGUF/requirements.txt
-RUN pip install --upgrade --no-cache-dir gguf
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-DepthAnythingV2/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI_PuLID_Flux_ll/requirements.txt
-RUN pip install --no-cache-dir -r /workspace/ComfyUI/custom_nodes/ComfyUI-Crystools/requirements.txt
-
 RUN pip install --no-cache-dir \
     invisible-watermark \
     onnx onnxruntime \
