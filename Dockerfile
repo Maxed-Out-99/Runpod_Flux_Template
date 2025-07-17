@@ -88,6 +88,8 @@ RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 # Clean up pip cache
 RUN rm -rf /root/.cache/pip
 
+# Copy the new custom node installer script
+COPY --chmod=755 install_custom_nodes.sh /opt/install_custom_nodes.sh
 # Copy scripts and workflows
 COPY --chmod=755 start.sh /opt/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/

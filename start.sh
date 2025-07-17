@@ -2,6 +2,9 @@
 set -e
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
+# Run the custom node installer
+/opt/install_custom_nodes.sh
+
 # 📦 Install core models once
 # INSTALL_LOCK="/workspace/.flux_installed"
 
