@@ -32,8 +32,8 @@ clone_repo "https://github.com/ltdrdata/ComfyUI-Manager.git" "${CUSTOM_NODES_DIR
 clone_repo "https://github.com/rgthree/rgthree-comfy.git" "${CUSTOM_NODES_DIR}/rgthree-comfy" "" "944d5353a1b0a668f40844018c3dc956b95a67d7"
 clone_repo "https://github.com/kijai/ComfyUI-KJNodes.git" "${CUSTOM_NODES_DIR}/ComfyUI-KJNodes" "" "ad37ce656c13e9abea002b46e3a89be3dba32355"
 clone_repo "https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git" "${CUSTOM_NODES_DIR}/ComfyUI-MaxedOut" "" "5920ada2cd84e10ccf624cfae49c70db0fe47621"
-# clone_repo "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack" "" "b3a815b43d987022542715b351ce3c2c02c902db"
-# clone_repo "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git" "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Subpack" "" "5b4e55058ae48e18e1c6d974000461ad1e240135"
+clone_repo "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack" "" "b3a815b43d987022542715b351ce3c2c02c902db"
+clone_repo "https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git" "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Subpack" "" "5b4e55058ae48e18e1c6d974000461ad1e240135"
 clone_repo "https://github.com/Fannovel16/comfyui_controlnet_aux.git" "${CUSTOM_NODES_DIR}/comfyui_controlnet_aux" "" "59b027e088c1c8facf7258f6e392d16d204b4d27"
 clone_repo "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git" "${CUSTOM_NODES_DIR}/ComfyUI_UltimateSDUpscale" "--recursive" "95fb26043d341c79246f0e137aabc64c19d67d37"
 clone_repo "https://github.com/kijai/ComfyUI-Florence2.git" "${CUSTOM_NODES_DIR}/ComfyUI-Florence2" "" "de485b65b3e1b9b887ab494afa236dff4bef9a7e"
@@ -52,61 +52,61 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
     # Install all packages in a single, controlled command.
     # Note: torch, torchvision, and opencv-python are intentionally excluded
     # to resolve conflicts and enforce the versions from the Dockerfile.
-    pip install --no-cache-dir \
-        GitPython \
-        PyGithub \
-        matrix-client==0.4.0 \
-        transformers \
-        huggingface-hub'>'0.20 \
-        typer \
-        rich \
-        typing-extensions \
-        toml \
-        uv \
-        chardet \
-        pillow'>='10.3.0 \
-        scipy'>='1.11.4 \
-        color-matcher \
-        matplotlib \
-        mss \
-        segment-anything \
-        scikit-image \
-        piexif \
-        numpy==1.26.4 \
-        dill \
-        git+https://github.com/facebookresearch/sam2 \
-        ultralytics \
-        importlib_metadata \
-        filelock \
-        einops \
-        pyyaml \
-        python-dateutil \
-        mediapipe \
-        svglib \
-        fvcore \
-        yapf \
-        omegaconf \
-        ftfy \
-        addict \
-        yacs \
-        trimesh[easy] \
-        albumentations'>='1.4.16 \
-        scikit-learn \
-        timm \
-        peft \
-        accelerate'>='0.26.0 \
-        insightface==0.7.3 \
-        onnx'>='1.14.0 \
-        gguf'>='0.13.0 \
-        sentencepiece \
-        protobuf \
-        cython \
-        facexlib \
-        onnxruntime-gpu \
-        deepdiff \
-        pynvml \
-        py-cpuinfo \
-        jetson-stats
+    # pip install --no-cache-dir \
+    #     GitPython \
+    #     PyGithub \
+    #     matrix-client==0.4.0 \
+    #     transformers \
+    #     huggingface-hub'>'0.20 \
+    #     typer \
+    #     rich \
+    #     typing-extensions \
+    #     toml \
+    #     uv \
+    #     chardet \
+    #     pillow'>='10.3.0 \
+    #     scipy'>='1.11.4 \
+    #     color-matcher \
+    #     matplotlib \
+    #     mss \
+    #     segment-anything \
+    #     scikit-image \
+    #     piexif \
+    #     numpy==1.26.4 \
+    #     dill \
+    #     git+https://github.com/facebookresearch/sam2 \
+    #     ultralytics \
+    #     importlib_metadata \
+    #     filelock \
+    #     einops \
+    #     pyyaml \
+    #     python-dateutil \
+    #     mediapipe \
+    #     svglib \
+    #     fvcore \
+    #     yapf \
+    #     omegaconf \
+    #     ftfy \
+    #     addict \
+    #     yacs \
+    #     trimesh[easy] \
+    #     albumentations'>='1.4.16 \
+    #     scikit-learn \
+    #     timm \
+    #     peft \
+    #     accelerate'>='0.26.0 \
+    #     insightface==0.7.3 \
+    #     onnx'>='1.14.0 \
+    #     gguf'>='0.13.0 \
+    #     sentencepiece \
+    #     protobuf \
+    #     cython \
+    #     facexlib \
+    #     onnxruntime-gpu \
+    #     deepdiff \
+    #     pynvml \
+    #     py-cpuinfo \
+    #     jetson-stats
 
     # Impact Pack disabled due to PyTorch 2.2.2 compatibility conflict
     # Requires torch>=2.5.1 — revisit if upgrading base PyTorch in the future
