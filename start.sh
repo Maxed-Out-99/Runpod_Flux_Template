@@ -27,10 +27,20 @@ COMFYUI_PID=$!
 
 echo "⏱️ Waiting for ComfyUI to become ready on port 8188..."
 
-# Python-based port check (self-contained, no netcat needed)
-until python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
+# Python-based port check with timeout
+CHECK_INTERVAL=5
+TIMEOUT=60
+ELAPSED=0
+
+while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
+  if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+    echo "❌ ComfyUI did not start within ${TIMEOUT}s. Dumping comfyui.log:"
+    cat /workspace/comfyui.log
+    exit 1
+  fi
   echo "ComfyUI not yet listening, waiting..."
-  sleep 5
+  sleep "$CHECK_INTERVAL"
+  ELAPSED=$((ELAPSED + CHECK_INTERVAL))
 done
 
 echo "✅ ComfyUI is now listening on port 8188."
