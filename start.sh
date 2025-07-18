@@ -22,7 +22,7 @@ python3 -u /workspace/auth/app.py > /workspace/unlock.log 2>&1 &
 
 # 🚀 Launch ComfyUI in the background
 echo "🚀 Starting ComfyUI..."
-python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 --enable-cors > /workspace/comfyui.log 2>&1 &
+python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/comfyui.log 2>&1 &
 COMFYUI_PID=$!
 
 echo "⏱️ Waiting for ComfyUI to become ready on port 8188..."
