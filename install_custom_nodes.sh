@@ -117,8 +117,7 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
 
     # Enforce the correct PyTorch version as the absolute last step
     echo "--- Enforcing final PyTorch version to prevent conflicts ---"
-    pip install torch==2.2.2 torchvision==0.17.2 --extra-index-url https://download.pytorch.org/whl/cu122
-
+    pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --extra-index-url https://download.pytorch.org/whl/cu122
     # Create the lock file to prevent this block from running again
     touch "$INSTALL_LOCK_FILE"
     echo "✅ Python dependencies installed."
