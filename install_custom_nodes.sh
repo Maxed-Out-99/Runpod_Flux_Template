@@ -73,8 +73,6 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         scikit-image \
         piexif \
         numpy==1.26.4 \
-        # dill \
-        # git+https://github.com/facebookresearch/sam2 \
         ultralytics \
         importlib_metadata \
         filelock \
@@ -107,6 +105,9 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         pynvml \
         py-cpuinfo \
         jetson-stats
+        # dill \
+        # git+https://github.com/facebookresearch/sam2 \
+
 
     # Impact Pack disabled due to PyTorch 2.2.2 compatibility conflict
     # Requires torch>=2.5.1 — revisit if upgrading base PyTorch in the future
