@@ -38,7 +38,7 @@ def download_flux_workflow():
         return "❌ HF_TOKEN not set.", 500
 
     url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/workflows/Mega%20Flux%20v1.json"
-    output_path = "/workspace/Mega Flux v1.json"
+    output_path = "/workspace/ComfyUI/user/default/workflows/Mega Flux v1.json"
 
     print(f"🔗 Download URL: {url}")
     print(f"📁 Target path: {output_path}")
