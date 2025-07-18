@@ -111,11 +111,11 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
     # Impact Pack disabled due to PyTorch 2.2.2 compatibility conflict
     # Requires torch>=2.5.1 — revisit if upgrading base PyTorch in the future
     # Run special installation scripts for specific nodes
-    echo "--- Running installer for Impact Pack ---"
-    python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py"
+    # echo "--- Running installer for Impact Pack ---"
+    # python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py"
 
-    echo "--- Running installer for Reactor ---"
-    python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py"
+    # echo "--- Running installer for Reactor ---"
+    # python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py"
 
     # Enforce the correct PyTorch version as the absolute last step
     echo "--- Enforcing final PyTorch version to prevent conflicts ---"
