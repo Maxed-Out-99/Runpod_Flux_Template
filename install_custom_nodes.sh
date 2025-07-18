@@ -37,7 +37,7 @@ clone_repo "https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git" "${CUSTOM_NODE
 clone_repo "https://github.com/Fannovel16/comfyui_controlnet_aux.git" "${CUSTOM_NODES_DIR}/comfyui_controlnet_aux" "" "59b027e088c1c8facf7258f6e392d16d204b4d27"
 clone_repo "https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git" "${CUSTOM_NODES_DIR}/ComfyUI_UltimateSDUpscale" "--recursive" "95fb26043d341c79246f0e137aabc64c19d67d37"
 clone_repo "https://github.com/kijai/ComfyUI-Florence2.git" "${CUSTOM_NODES_DIR}/ComfyUI-Florence2" "" "de485b65b3e1b9b887ab494afa236dff4bef9a7e"
-clone_repo "https://github.com/Gourieff/ComfyUI-ReActor.git" "${CUSTOM_NODES_DIR}/comfyui-reactor-node" "" "9b17e4cea53769d7157e507659adbbe09a3114fe"
+# clone_repo "https://github.com/Gourieff/ComfyUI-ReActor.git" "${CUSTOM_NODES_DIR}/comfyui-reactor-node" "" "9b17e4cea53769d7157e507659adbbe09a3114fe"
 clone_repo "https://github.com/chrisgoringe/cg-use-everywhere.git" "${CUSTOM_NODES_DIR}/cg-use-everywhere" "" "a834f09f3889264f192711971ca624128650a250"
 clone_repo "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" "${CUSTOM_NODES_DIR}/ComfyUI-Custom-Scripts" "" "aac13aa7ce35b07d43633c3bbe654a38c00d74f5"
 clone_repo "https://github.com/city96/ComfyUI-GGUF.git" "${CUSTOM_NODES_DIR}/ComfyUI-GGUF" "" "b3ec875a68d94b758914fd48d30571d953bb7a54"
@@ -120,7 +120,11 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
 
     # Enforce the correct PyTorch version as the absolute last step
     echo "--- Enforcing final PyTorch version to prevent conflicts ---"
-    pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --extra-index-url https://download.pytorch.org/whl/cu122
+    pip install --no-cache-dir torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --extra-index-url https://download.pytorch.org/whl/cu122
+
+    # Verify the final torch version
+    python -c "import torch; print('Final torch version:', torch.__version__)"
+    
     # Create the lock file to prevent this block from running again
     touch "$INSTALL_LOCK_FILE"
     echo "✅ Python dependencies installed."
