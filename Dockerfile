@@ -11,6 +11,11 @@ RUN apt update && apt install -y \
     git lfs install && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
+
+COPY requirements.freeze.txt /tmp/requirements.freeze.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements.freeze.txt
+
 # Install build tools for insightface & others
 RUN apt update && apt install -y \
     build-essential \
@@ -49,12 +54,6 @@ RUN pip install --no-cache-dir \
 # Force reinstall correct NumPy
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 
-# Clean up pip cache
-RUN rm -rf /root/.cache/pip
-
-# Copy the custom node installer script and run it so dependencies are baked in
-COPY --chmod=755 install_custom_nodes.sh /opt/install_custom_nodes.sh
-RUN /opt/install_custom_nodes.sh
 # Copy scripts and workflows
 COPY --chmod=755 start.sh /opt/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/
@@ -69,6 +68,10 @@ COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
 COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
 
 RUN pip install --no-cache-dir -r /workspace/auth/requirements.txt
+
+# Copy the custom node installer script and run it so dependencies are baked in
+COPY --chmod=755 install_custom_nodes.sh /opt/install_custom_nodes.sh
+RUN /opt/install_custom_nodes.sh
 
 # Expose ComfyUI default port
 EXPOSE 8188
