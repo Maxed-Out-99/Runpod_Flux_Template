@@ -123,7 +123,7 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
     pip install --no-cache-dir torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --extra-index-url https://download.pytorch.org/whl/cu122
 
     # Verify the final torch version
-    python -c "import torch; print('Final torch version:', torch.__version__)"
+    python3 -c "import torch; print('Final torch version:', torch.__version__)"
     
     # Create the lock file to prevent this block from running again
     touch "$INSTALL_LOCK_FILE"
