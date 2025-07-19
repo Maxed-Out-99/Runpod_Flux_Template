@@ -104,9 +104,9 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         deepdiff \
         pynvml \
         py-cpuinfo \
-        jetson-stats
-        # dill \
-        # git+https://github.com/facebookresearch/sam2 \
+        jetson-stats \
+        dill \
+        git+https://github.com/facebookresearch/sam2 \
 
 
     # Impact Pack disabled due to PyTorch 2.2.2 compatibility conflict
@@ -120,7 +120,7 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
 
     # Enforce the correct PyTorch version as the absolute last step
     echo "--- Enforcing final PyTorch version to prevent conflicts ---"
-    pip install --no-cache-dir torch==2.7.1+cu128 torchvision==0.22.1 torchaudio==2.7.1+cu128 --extra-index-url https://download.pytorch.org/whl/cu128
+    pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu121
 
     # Verify the final torch version
     python3 -c "import torch; print('Final torch version:', torch.__version__)"
