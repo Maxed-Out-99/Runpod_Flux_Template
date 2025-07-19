@@ -120,7 +120,7 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
 
     # Enforce the correct PyTorch version as the absolute last step
     echo "--- Enforcing final PyTorch version to prevent conflicts ---"
-    pip install --no-cache-dir torch==2.5.1 torchvision==0.18.1 torchaudio==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu121
+    pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu121
 
     # Verify the final torch version
     python3 -c "import torch; print('Final torch version:', torch.__version__)"

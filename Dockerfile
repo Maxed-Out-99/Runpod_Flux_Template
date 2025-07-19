@@ -3,7 +3,7 @@ FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
 # Set build args for flexibility
 ARG PYTORCH_VERSION=2.5.1
-ARG TORCHVISION_VERSION=0.18.1
+ARG TORCHVISION_VERSION=0.20.1
 
 # Install system dependencies
 RUN apt update && apt install -y \
