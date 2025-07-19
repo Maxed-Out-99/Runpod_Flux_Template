@@ -105,8 +105,8 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         pynvml \
         py-cpuinfo \
         jetson-stats \
-        dill \
-        git+https://github.com/facebookresearch/sam2 \
+        # dill \
+        # git+https://github.com/facebookresearch/sam2 \
 
 
     # Impact Pack disabled due to PyTorch 2.2.2 compatibility conflict
