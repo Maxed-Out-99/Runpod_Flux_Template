@@ -1,9 +1,9 @@
 # Base image with CUDA 12.2 and Ubuntu 22.04
 FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
-# Set build args for flexibility (optional)
-ARG PYTORCH_VERSION=2.2.2
-ARG TORCHVISION_VERSION=0.17.2
+# Set build args for flexibility
+ARG PYTORCH_VERSION=2.5.1
+ARG TORCHVISION_VERSION=0.18.1
 
 # Install system dependencies
 RUN apt update && apt install -y \
@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir insightface==0.7.3
 RUN pip install --no-cache-dir --use-pep517 facexlib
 
 # Install PyTorch (with CUDA 12.2 support)
-RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu122
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu121
 
 RUN pip install --no-cache-dir \
     invisible-watermark \
