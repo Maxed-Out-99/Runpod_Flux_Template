@@ -59,7 +59,6 @@ COPY --chmod=755 start.sh /opt/start.sh
 COPY --chmod=755 scripts/ /workspace/scripts/
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
-COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
 
 # Copy Patreon auth files
 COPY --chmod=755 auth/app.py /workspace/auth/app.py
