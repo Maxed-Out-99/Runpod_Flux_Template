@@ -1,9 +1,69 @@
-<!-- /workspace/success.html -->
 <html>
+  <head>
+    <title>✅ Mega Flux Unlocked</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: #eee; text-align: center; padding: 2em; }
+        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 2em; border-radius: 8px; }
+        h1 { color: #00ff99; }
+        a { color: #00ffff; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .button-container { margin-top: 2em; border-top: 1px solid #444; padding-top: 2em; }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .button-secondary {
+            background-color: #6c757d;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        #status-message {
+            margin-top: 1em;
+            padding: 1em;
+            border-radius: 5px;
+            background-color: #334;
+            color: #ccf;
+            display: none; /* Hidden by default */
+        }
+    </style>
+  </head>
   <body>
-    <h1>✅ Flux Unlocked</h1>
-    <p>You're now verified as a Power User.</p>
-    <p>Your premium files have been downloaded automatically.</p>
-    <a href="https://patreon.com/MaxedOut">Return to Patreon</a>
+    <div class="container">
+      <h1>✅ Mega Flux Unlocked</h1>
+      <p>You've been verified as a Power User.</p>
+      <p>Your premium workflow has been downloaded automatically.</p>
+      <p>Simply refresh the ComfyUI page to see it appear in the side bar (Press W).</p>
+      <div class="button-container">
+          <h2>Download All Models?</h2>
+          <p>You can skip large unets (Canny, Depth, Fill) and download as needed with the "(Down)Load UNET MXD" node or download everything.</p>
+          <a href="/download/all" class="button">Download All Models</a>
+          <p></p>
+          <a href="/download/small" class="button button-secondary">Download Only Small Models (Faster)</a>
+      </div>
+
+      <div id="status-message"></div>
+    </div>
+
+    <script>
+        // Display a message if the URL has a 'status' parameter
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('status');
+        const messageDiv = document.getElementById('status-message');
+
+        if (status === 'all_started') {
+            messageDiv.textContent = '✅ Download started for all Mega files. Check the container logs for progress.';
+            messageDiv.style.display = 'block';
+        } else if (status === 'small_started') {
+            messageDiv.textContent = '✅ Download started for the small Mega files. Check the container logs for progress.';
+            messageDiv.style.display = 'block';
+        }
+    </script>
   </body>
 </html>

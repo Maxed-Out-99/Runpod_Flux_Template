@@ -1,17 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Upgrade Required</title>
+    <title>Upgrade to Mega Flux</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 3em; background: #111; color: #eee; }
-        a { color: #00ffff; text-decoration: none; font-weight: bold; }
-        a:hover { text-decoration: underline; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; text-align: center; padding: 1em; background: #121212; color: #e0e0e0; }
+        .container { max-width: 800px; margin: 0 auto; background: #1e1e1e; padding: 2em; border-radius: 12px; border: 1px solid #333; }
+        h1 { color: #f0b90b; } /* A standout color */
+        h2 { color: #ffffff; border-bottom: 1px solid #444; padding-bottom: 0.5em; margin-top: 2em; }
+        p { color: #b0b0b0; }
+        strong { color: #ffffff; }
+        a { text-decoration: none; font-weight: bold; }
+        .button {
+            display: inline-block;
+            background-color: #5865F2; /* Discord-like blue */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        .button:hover { transform: scale(1.05); }
+        .button-primary {
+            background-color: #f96854; /* Patreon-like orange */
+            font-size: 1.2em;
+            padding: 15px 30px;
+        }
+        .showcase-image {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 1em;
+            border: 1px solid #444;
+        }
+        .features { text-align: left; margin-top: 1.5em; }
+        .features li { margin-bottom: 0.75em; }
     </style>
 </head>
 <body>
-    <h1>🚫 Access Denied</h1>
-    <p>You are not a Power User — yet.</p>
-    <p>Unlock premium workflows and tools by joining the <strong>⚡ Power User tier</strong> on Patreon.</p>
-    <p><a href="https://www.patreon.com/MaxedOut99" target="_blank">Upgrade Now</a></p>
+    <div class="container">
+        <h1>🚫 Access Denied... But Look What You're Missing!</h1>
+        <p>Your Patreon account doesn't have the <strong>⚡ Power User tier</strong>, but it's just one click away.</p>
+        
+        <a href="https://www.patreon.com/MaxedOut99" target="_blank" class="button button-primary">Become a Power User Now</a>
+        <a href="https://discord.gg/weT9Z3jwKJ" target="_blank" class="button">Join the Discord Community</a>
+
+        <h2>✨ Unlock the Mega Exclusives ✨</h2>
+        <p>The Mega Flux workflow combines powerful, exclusive tools into a seamless one-click experience.</p>
+        <img src="images/mega_exclusives.jpg" alt="Mega Exclusives Showcase" class="showcase-image"> <h2>What's Inside?</h2>
+        <ul class="features">
+            <li><strong>Depth & Canny ControlNets:</strong> Keep the layout or edges of an image while completely changing the style.</li>
+            <li><strong>OpenPose:</strong> Guide creations with a character pose, ignoring distracting background elements.</li>
+            <li><strong>Pulid Face Transfer:</strong> Use a reference face to guide your character generations without complex training.</li>
+            <li><strong>Redux:</strong> Transfer the style of one image to another.</li>
+            <li><strong>Plus:</strong> Blend Images, Face Swap, and Face Restore tools to complete your toolkit.</li>
+        </ul>
+
+        <hr style="border-color: #333; margin: 2em 0;">
+
+        <h2>Already a Power User?</h2>
+        <p>If you believe you should have access, please try the steps below.</p>
+        <a href="https://www.patreon.com/settings/memberships" target="_blank" class="button">Check My Tier on Patreon</a>
+        <a href="/auth" class="button">Try Again</a>
+        <p style="margin-top:1em;">If the issue continues, please ask for help in the <strong>#help channel</strong> in the Discord server!</p>
+    </div>
 </body>
 </html>

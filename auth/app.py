@@ -3,7 +3,7 @@ import json
 import requests
 from flask import Flask, redirect, request, send_file
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -65,7 +65,54 @@ def download_flux_workflow():
 
     print("✅ Power User file downloaded successfully.")
     print(f"📦 Saved to: {output_path}")
-    return "✅ File downloaded"
+    return "✅ File downloaded", 200
+
+def download_mega_scripts():
+    print("📥 Downloading Mega helper scripts...")
+
+    hf_token = get_env_var("HF_TOKEN")
+    if not hf_token:
+        print("❌ Hugging Face token not found.")
+        return "❌ HF_TOKEN not set.", 500
+
+    base_url = (
+        "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/scripts_are_here/"
+    )
+    scripts = ["download_all_mega_files.py", "download_small_mega_files.py"]
+    scripts_dir = "/workspace/scripts"
+
+    for script in scripts:
+        url = f"{base_url}{script}"
+        output_path = os.path.join(scripts_dir, script)
+
+        print(f"🔗 Download URL: {url}")
+        print(f"📁 Target path: {output_path}")
+
+        command = [
+            "curl",
+            "-L",
+            "-H",
+            f"Authorization: Bearer {hf_token}",
+            url,
+            "-o",
+            output_path,
+        ]
+
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print(f"❌ CURL failed to download {script}.")
+            print("📄 STDERR:", result.stderr.strip())
+            print("📄 STDOUT:", result.stdout.strip())
+            continue
+
+        if not os.path.exists(output_path):
+            print(f"⚠️ CURL completed but {script} not found at target path.")
+            continue
+
+        print(f"✅ {script} downloaded successfully.")
+
+    return "✅ Scripts downloaded", 200
 
 @app.errorhandler(404)
 def not_found(e):
@@ -78,18 +125,34 @@ def success():
 
 @app.route("/")
 def index():
+    # Replaced meta-refresh with a button for better UX
     return """
     <html>
         <head>
-            <meta http-equiv="refresh" content="7; url=/auth" />
+            <title>Unlock Mega Flux</title>
+            <style>
+                body { font-family: sans-serif; text-align: center; padding-top: 60px; background: #111; color: #eee; }
+                a.button { 
+                    background-color: #5865F2;
+                    color: white; 
+                    padding: 15px 30px; 
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    font-size: 1.2em;
+                    font-weight: bold;
+                    display: inline-block;
+                    margin-top: 20px;
+                }
+                a.button:hover { background-color: #4752C4; }
+            </style>
         </head>
-        <body style="font-family:sans-serif;text-align:center;padding-top:60px">
-            <h1>⚡ Unlocking Mega Flux...</h1>
-            <p>Warming up the service. You’ll be redirected shortly.</p>
+        <body>
+            <h1>⚡ Unlock Mega Flux</h1>
+            <p>To continue, please authenticate with your Patreon account.</p>
+            <a href="/auth" class="button">Authenticate with Patreon</a>
         </body>
     </html>
     """
-
 # Step 1: Start auth - THIS IS THE MAIN CHANGE
 @app.route("/auth")
 def auth():
@@ -174,16 +237,48 @@ def callback():
                 tier_title = tiers_by_id[tier_id].get('title', '')
                 print(f"-> Comparing API name '{tier_title}' with required name '{REQUIRED_TIER}'")
 
+                # --- NEW CODE ---
                 if tier_title == REQUIRED_TIER:
                     print("✅ Power User tier found!")
+
+                    # Check results of initial downloads before finalizing
+                    flux_msg, flux_status = download_flux_workflow()
+                    if flux_status != 200: return flux_msg, flux_status
+
+                    scripts_msg, scripts_status = download_mega_scripts()
+                    if scripts_status != 200: return scripts_msg, scripts_status
+
                     with open("/workspace/.flux_token", "w") as f:
-                        f.write(datetime.utcnow().isoformat())
-
-                    download_flux_workflow()
+                        f.write(datetime.now(timezone.utc).isoformat())
                     return redirect("/success")
-
+                
     print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
+
+# NEW: Route to trigger background downloads
+@app.route("/download/<version>")
+def download_mega(version):
+    script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
+    if version not in script_map:
+        return "Invalid version specified", 404
+
+    script_name = script_map[version]
+    script_path = os.path.join("/workspace/scripts", script_name)
+
+    if not os.path.exists(script_path):
+        return f"Script {script_name} not found. Please re-authenticate to download it.", 500
+
+    print(f"🚀 User triggered background download of {version} files using {script_name}...")
+
+    # Run in the background and log output to a file for debugging
+    log_dir = "/workspace/logs"
+    os.makedirs(log_dir, exist_ok=True)
+    log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
+    with open(log_file_path, "w") as log_file:
+        subprocess.Popen(["python", script_path], stdout=log_file, stderr=subprocess.STDOUT)
+
+    # Redirect immediately with a status message
+    return redirect(f"/success?status={version}_started")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=7860)
