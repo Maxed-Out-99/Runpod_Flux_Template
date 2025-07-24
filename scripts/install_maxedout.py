@@ -158,23 +158,18 @@ def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
         written = start_byte
         last_print = time.time()
 
-    with open(tmp_path, mode) as f:
-        for chunk in r.iter_content(chunk_size=CHUNK):
-            f.write(chunk)
-            written += len(chunk)
-
-            if TEST_MODE and written >= 1024 * 1024:  # 1MB limit for test mode
-                log(f"🧪 Test mode: stopped at 1 MB for {tmp_path.name}")
-                break
-
-            now = time.time()
-            if now - last_print >= PROG_INT or written == total_expected:
-                pct = f" ({written / total_expected:.1%})" if total_expected > 0 else ""
-                percent = int(written / total_expected * 100) if total_expected > 0 else 0
-
-                # Log only at intermediate 10% intervals
-                if 0 < percent < 100 and percent % 10 == 0:
-                    log(f"   📥 {tmp_path.name}{pct}")
+        with open(tmp_path, mode) as f:
+            for chunk in r.iter_content(chunk_size=CHUNK):
+                f.write(chunk)
+                written += len(chunk)
+                if TEST_MODE and written >= 1024 * 1024: # 1MB limit for test mode
+                    log(f"🧪 Test mode: stopped at 1 MB for {tmp_path.name}")
+                    break
+                now = time.time()
+                if now - last_print >= PROG_INT or written == total_expected:
+                    pct = f" ({written / total_expected:.1%})" if total_expected > 0 else ""
+                    _orig_stdout.write(f"\r   📥 {tmp_path.name}{pct}  ")
+                    _orig_stdout.flush()
                     last_print = now
 
     _orig_stdout.write("\n")
