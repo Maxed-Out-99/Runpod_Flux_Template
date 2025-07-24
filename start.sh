@@ -25,8 +25,6 @@ echo "🚀 Starting ComfyUI..."
 python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/comfyui.log 2>&1 &
 COMFYUI_PID=$!
 
-echo "⏱️ Waiting for ComfyUI to become ready on port 8188..."
-
 # Python-based port check with timeout
 CHECK_INTERVAL=5
 TIMEOUT=60
