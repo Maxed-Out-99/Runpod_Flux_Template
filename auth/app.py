@@ -240,7 +240,7 @@ def download_mega(version):
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
         with open(log_file_path, "w") as log_file:
-            subprocess.Popen(["python", script_path], stdout=log_file, stderr=subprocess.STDOUT)
+            subprocess.Popen(["python3", script_path], stdout=log_file, stderr=subprocess.STDOUT)
 
     except Exception as e:
         # This will catch any error during the Popen call and log it for debugging

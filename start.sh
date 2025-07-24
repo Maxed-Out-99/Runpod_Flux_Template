@@ -30,6 +30,7 @@ CHECK_INTERVAL=5
 TIMEOUT=60
 ELAPSED=0
 
+# ... (while loop code) ...
 while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
   if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
     cat /workspace/comfyui.log
@@ -38,6 +39,11 @@ while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.conne
   sleep "$CHECK_INTERVAL"
   ELAPSED=$((ELAPSED + CHECK_INTERVAL))
 done
+
+# Add these lines to confirm ComfyUI is ready
+echo "✅ ComfyUI is listening on port 8188. Startup complete."
+echo ""
+echo ""
 
 # Keeps the container alive as long as ComfyUI runs
 wait $COMFYUI_PID

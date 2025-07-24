@@ -142,15 +142,25 @@ def clone_custom_nodes():
         log(f"   ❌ Failed to clone MaxedOut custom nodes: {e.stderr}")
         FAILED_FILES.append(("custom_nodes/ComfyUI-MaxedOut", "Initial Git clone failed"))
 
-# ── File Downloading Logic ──────────────────────────────────────────────────
+# ── File Downloading Logic ────────────────────────────────────────────────
 def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
-    """Performs a single download attempt, with resume logic."""
+    """
+    Performs a single download attempt, using a dynamic progress bar for
+    interactive terminals and simple start/end messages for log files.
+    """
+    # Check if we're in an interactive terminal (TTY)
+    is_tty = sys.stdout.isatty()
+    
     range_header, mode, start_byte = {}, "wb", 0
     if resume and tmp_path.exists():
         start_byte = tmp_path.stat().st_size
         if start_byte > 0:
             range_header = {"Range": f"bytes={start_byte}-"}
             mode = "ab"
+
+    # For non-interactive logs, print a simple start message.
+    if not is_tty:
+        print(f"   📥 Downloading {tmp_path.name}...")
 
     with requests.get(url, stream=True, timeout=(10, 300), headers=range_header) as r:
         r.raise_for_status()
@@ -162,24 +172,30 @@ def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
             for chunk in r.iter_content(chunk_size=CHUNK):
                 f.write(chunk)
                 written += len(chunk)
-                if TEST_MODE and written >= 1024 * 1024: # 1MB limit for test mode
-                    log(f"🧪 Test mode: stopped at 1 MB for {tmp_path.name}")
-                    break
-                now = time.time()
-                if now - last_print >= PROG_INT or written == total_expected:
-                    pct = f" ({written / total_expected:.1%})" if total_expected > 0 else ""
-                    _orig_stdout.write(f"\r   📥 {tmp_path.name}{pct}  ")
-                    _orig_stdout.flush()
-                    last_print = now
+                
+                # If in an interactive terminal, show the detailed progress bar.
+                if is_tty:
+                    if TEST_MODE and written >= 1024 * 1024:
+                        print(f"🧪 Test mode: stopped at 1 MB for {tmp_path.name}")
+                        break
+                    now = time.time()
+                    if now - last_print >= PROG_INT or written == total_expected:
+                        pct = f" ({written / total_expected:.1%})" if total_expected > 0 else ""
+                        _orig_stdout.write(f"\r   📥 {tmp_path.name}{pct}  ")
+                        _orig_stdout.flush()
+                        last_print = now
 
-    _orig_stdout.write("\n")
-    _orig_stdout.flush()
+    # A final newline for the interactive progress bar to look clean.
+    if is_tty:
+        _orig_stdout.write("\n")
+        _orig_stdout.flush()
 
     if total_expected and written != total_expected and not TEST_MODE:
         raise IOError(f"Corrupted download: size mismatch (got {written}, expected {total_expected})")
 
     return written
 
+# ── Download Wrapper Function ────────────────────────────────────────────────
 def download(remote_path: str, local_path: Path, expected_sha256: str) -> None:
     """Main download wrapper with retries, resume, and hash checking."""
     if local_path.exists():
