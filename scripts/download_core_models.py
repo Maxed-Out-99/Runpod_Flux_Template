@@ -12,6 +12,7 @@ FILES = [
     ("Adetailer/sams/sam_vit_b_01ec64.pth", "sams/sam_vit_b_01ec64.pth", "ec2df62732614e57411cdcf32a23ffdf28910380d03139ee0f4fcbe91eb8c912"),
     ("Adetailer/Ultralytics/bbox/face_yolov8m.pt", "ultralytics/bbox/face_yolov8m.pt", "e3893a92c5c1907136b6cc75404094db767c1e0cfefe1b43e87dad72af2e4c9f"),
     ("Adetailer/Ultralytics/bbox/hand_yolov8s.pt", "ultralytics/bbox/hand_yolov8s.pt", "30878cea9870964d4a238339e9dcff002078bbbaa1a058b07e11c167f67eca1c"),
+    ("Flux1/LoRas/navi_flux_v1.safetensors", "loras/navi_flux_v1.safetensors", "8c60d9038512bba3964bba0768771c2724a76cd41e5cfb5543dca8b84570e303"),
 ]
 
 def main():

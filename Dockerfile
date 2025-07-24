@@ -66,6 +66,7 @@ COPY --chmod=755 auth/app.py /workspace/auth/app.py
 COPY --chmod=644 auth/success.html /workspace/auth/success.html
 COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
 COPY --chmod=644 auth/index.html /workspace/auth/index.html
+COPY --chmod=644 auth/downloading.html /workspace/auth/downloading.html
 COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
 
 RUN pip install --no-cache-dir -r /workspace/auth/requirements.txt

@@ -52,18 +52,21 @@
     </div>
 
     <script>
-        // Display a message if the URL has a 'status' parameter
-        const params = new URLSearchParams(window.location.search);
-        const status = params.get('status');
-        const messageDiv = document.getElementById('status-message');
+            // Display a message if the URL has a 'status' parameter
+            const params = new URLSearchParams(window.location.search);
+            const status = params.get('status');
+            const messageDiv = document.getElementById('status-message');
 
-        if (status === 'all_started') {
-            messageDiv.textContent = '✅ Download started for all Mega files. Check the container logs for progress.';
-            messageDiv.style.display = 'block';
-        } else if (status === 'small_started') {
-            messageDiv.textContent = '✅ Download started for the small Mega files. Check the container logs for progress.';
-            messageDiv.style.display = 'block';
-        }
-    </script>
+            if (status === 'all_complete') {
+                messageDiv.textContent = '✅ Download complete for All Models!';
+                messageDiv.style.backgroundColor = '#2a5'; // Greenish color for success
+                messageDiv.style.display = 'block';
+            } else if (status === 'small_complete') {
+                messageDiv.textContent = '✅ Download complete for Small Models!';
+                messageDiv.style.backgroundColor = '#2a5';
+                messageDiv.style.display = 'block';
+            }
+        </script>
+
   </body>
 </html>

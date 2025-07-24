@@ -74,7 +74,7 @@ def download_mega_scripts():
     if not hf_token:
         return "❌ HF_TOKEN not set.", 500
 
-    base_url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/scripts_are_here/"
+    base_url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/"
     scripts = ["download_all_mega_files.py", "download_small_mega_files.py"]
     scripts_dir = "/workspace/scripts"
     os.makedirs(scripts_dir, exist_ok=True) # Ensure directory exists
@@ -218,7 +218,6 @@ def callback():
     print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
 
-# NEW, MORE ROBUST CODE - USE THIS INSTEAD
 @app.route("/download/<version>")
 def download_mega(version):
     script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
@@ -227,26 +226,42 @@ def download_mega(version):
 
     script_name = script_map[version]
     script_path = os.path.join("/workspace/scripts", script_name)
-
+    
     if not os.path.exists(script_path):
-        print(f"❌ ERROR: Attempted to run a script that does not exist at {script_path}")
-        return f"Script {script_name} not found. Please re-authenticate to download it.", 500
+        return f"Script {script_name} not found.", 500
 
-    print(f"🚀 User triggered background download of {version} files using {script_name}...")
+    # Clean up any old ".done" files before starting a new download
+    done_file = f"/workspace/logs/download_{version}.done"
+    if os.path.exists(done_file):
+        os.remove(done_file)
 
     try:
-        # Run in the background and log output to a file for debugging
         log_dir = "/workspace/logs"
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
         with open(log_file_path, "w") as log_file:
             subprocess.Popen(["python3", script_path], stdout=log_file, stderr=subprocess.STDOUT)
-
     except Exception as e:
-        # This will catch any error during the Popen call and log it for debugging
         print(f"🔥🔥🔥 CRITICAL ERROR trying to start subprocess for {script_name} 🔥🔥🔥")
         print(f"Exception: {e}")
-        return "An unexpected error occurred while trying to start the download process. Please check the container logs for details.", 500
+        return "An unexpected error occurred while trying to start the download.", 500
+
+    # Redirect to the new status-checking page
+    return redirect(f"/downloading/{version}")
+
+@app.route("/downloading/<version>")
+def downloading_status(version):
+    if version not in ["all", "small"]:
+        return "Invalid version specified", 404
+        
+    done_file = f"/workspace/logs/download_{version}.done"
+    
+    if os.path.exists(done_file):
+        # The .done file exists, so redirect to success with a "complete" message
+        return redirect(f"/success?status={version}_complete")
+    else:
+        # The .done file is not there yet, show the waiting page
+        return send_file("/workspace/auth/downloading.html")
 
 # Add this entire new function to app.py
 @app.route('/images/<path:filename>')
