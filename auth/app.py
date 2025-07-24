@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from flask import Flask, redirect, request, send_file
+from flask import Flask, redirect, request, send_file, send_from_directory
 import subprocess
 from datetime import datetime, timedelta, timezone
 import sys
@@ -123,37 +123,13 @@ def success():
     print("✅ Success page reached.")
     return send_file("/workspace/auth/success.html")
 
+# NEW CODE -- USE THIS INSTEAD
 @app.route("/")
 def index():
-    # Replaced meta-refresh with a button for better UX
-    return """
-    <html>
-        <head>
-            <title>Unlock Mega Flux</title>
-            <style>
-                body { font-family: sans-serif; text-align: center; padding-top: 60px; background: #111; color: #eee; }
-                a.button { 
-                    background-color: #5865F2;
-                    color: white; 
-                    padding: 15px 30px; 
-                    text-decoration: none; 
-                    border-radius: 8px; 
-                    font-size: 1.2em;
-                    font-weight: bold;
-                    display: inline-block;
-                    margin-top: 20px;
-                }
-                a.button:hover { background-color: #4752C4; }
-            </style>
-        </head>
-        <body>
-            <h1>⚡ Unlock Mega Flux</h1>
-            <p>To continue, please authenticate with your Patreon account.</p>
-            <a href="/auth" class="button">Authenticate with Patreon</a>
-        </body>
-    </html>
-    """
-# Step 1: Start auth - THIS IS THE MAIN CHANGE
+    print("✅ Index page served.")
+    return send_file("/workspace/auth/index.html")
+
+# Step 1: Start auth
 @app.route("/auth")
 def auth():
     # Get the pod ID and port number reliably from RunPod's environment variables
@@ -255,7 +231,7 @@ def callback():
     print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
 
-# NEW: Route to trigger background downloads
+# NEW, MORE ROBUST CODE - USE THIS INSTEAD
 @app.route("/download/<version>")
 def download_mega(version):
     script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
@@ -266,19 +242,32 @@ def download_mega(version):
     script_path = os.path.join("/workspace/scripts", script_name)
 
     if not os.path.exists(script_path):
+        print(f"❌ ERROR: Attempted to run a script that does not exist at {script_path}")
         return f"Script {script_name} not found. Please re-authenticate to download it.", 500
 
     print(f"🚀 User triggered background download of {version} files using {script_name}...")
 
-    # Run in the background and log output to a file for debugging
-    log_dir = "/workspace/logs"
-    os.makedirs(log_dir, exist_ok=True)
-    log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
-    with open(log_file_path, "w") as log_file:
-        subprocess.Popen(["python", script_path], stdout=log_file, stderr=subprocess.STDOUT)
+    try:
+        # Run in the background and log output to a file for debugging
+        log_dir = "/workspace/logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
+        with open(log_file_path, "w") as log_file:
+            subprocess.Popen(["python", script_path], stdout=log_file, stderr=subprocess.STDOUT)
+
+    except Exception as e:
+        # This will catch any error during the Popen call and log it for debugging
+        print(f"🔥🔥🔥 CRITICAL ERROR trying to start subprocess for {script_name} 🔥🔥🔥")
+        print(f"Exception: {e}")
+        return "An unexpected error occurred while trying to start the download process. Please check the container logs for details.", 500
+
+# Add this entire new function to app.py
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serves images from the /workspace/auth/images/ directory."""
+    return send_from_directory('/workspace/auth/images', filename)
 
     # Redirect immediately with a status message
     return redirect(f"/success?status={version}_started")
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=7860)
