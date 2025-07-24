@@ -67,52 +67,37 @@ def download_flux_workflow():
     print(f"📦 Saved to: {output_path}")
     return "✅ File downloaded", 200
 
+# + NEW, MORE RELIABLE CODE
 def download_mega_scripts():
     print("📥 Downloading Mega helper scripts...")
-
     hf_token = get_env_var("HF_TOKEN")
     if not hf_token:
-        print("❌ Hugging Face token not found.")
         return "❌ HF_TOKEN not set.", 500
 
-    base_url = (
-        "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/scripts_are_here/"
-    )
+    base_url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/scripts_are_here/"
     scripts = ["download_all_mega_files.py", "download_small_mega_files.py"]
     scripts_dir = "/workspace/scripts"
+    os.makedirs(scripts_dir, exist_ok=True) # Ensure directory exists
+    
+    all_scripts_downloaded = True # Flag to track success
 
     for script in scripts:
         url = f"{base_url}{script}"
         output_path = os.path.join(scripts_dir, script)
-
-        print(f"🔗 Download URL: {url}")
-        print(f"📁 Target path: {output_path}")
-
-        command = [
-            "curl",
-            "-L",
-            "-H",
-            f"Authorization: Bearer {hf_token}",
-            url,
-            "-o",
-            output_path,
-        ]
-
+        command = ["curl", "-L", "-H", f"Authorization: Bearer {hf_token}", url, "-o", output_path]
         result = subprocess.run(command, capture_output=True, text=True)
 
-        if result.returncode != 0:
-            print(f"❌ CURL failed to download {script}.")
-            print("📄 STDERR:", result.stderr.strip())
-            print("📄 STDOUT:", result.stdout.strip())
-            continue
+        if result.returncode != 0 or not os.path.exists(output_path):
+            print(f"❌ FAILED to download {script}.")
+            print(f"📄 STDERR: {result.stderr.strip()}")
+            all_scripts_downloaded = False # Set flag to false on failure
+        else:
+            print(f"✅ {script} downloaded successfully.")
 
-        if not os.path.exists(output_path):
-            print(f"⚠️ CURL completed but {script} not found at target path.")
-            continue
-
-        print(f"✅ {script} downloaded successfully.")
-
-    return "✅ Scripts downloaded", 200
+    if all_scripts_downloaded:
+        return "✅ All helper scripts downloaded.", 200
+    else:
+        return "❌ Failed to download one or more helper scripts.", 500
 
 @app.errorhandler(404)
 def not_found(e):
@@ -158,10 +143,12 @@ def callback():
         with open("/workspace/.flux_token") as f:
             try:
                 ts = datetime.fromisoformat(f.read().strip())
-                if datetime.utcnow() - ts <= timedelta(hours=24):
+                # Use timezone.utc to correctly compare with the saved timestamp
+                if datetime.now(timezone.utc) - ts <= timedelta(hours=24):
                     print("✅ Already unlocked within last 24h")
                     return redirect("/success")
             except Exception as e:
+                
                 print(f"⚠️ Couldn't parse timestamp: {e}")
                 os.remove("/workspace/.flux_token")
 
@@ -267,7 +254,5 @@ def serve_image(filename):
     """Serves images from the /workspace/auth/images/ directory."""
     return send_from_directory('/workspace/auth/images', filename)
 
-    # Redirect immediately with a status message
-    return redirect(f"/success?status={version}_started")
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=7860)

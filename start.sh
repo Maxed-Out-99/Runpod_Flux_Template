@@ -37,7 +37,6 @@ while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.conne
     cat /workspace/comfyui.log
     exit 1
   fi
-  echo "ComfyUI not yet listening, waiting..."
   sleep "$CHECK_INTERVAL"
   ELAPSED=$((ELAPSED + CHECK_INTERVAL))
 done
