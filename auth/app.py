@@ -240,7 +240,7 @@ def download_mega(version):
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
         with open(log_file_path, "w") as log_file:
-            subprocess.Popen(["python3", script_path], stdout=log_file, stderr=subprocess.STDOUT)
+            subprocess.Popen(["python3", script_path], stdout=log_file, stderr=subprocess.STDOUT,  cwd="/workspace/scripts")
     except Exception as e:
         print(f"🔥🔥🔥 CRITICAL ERROR trying to start subprocess for {script_name} 🔥🔥🔥")
         print(f"Exception: {e}")

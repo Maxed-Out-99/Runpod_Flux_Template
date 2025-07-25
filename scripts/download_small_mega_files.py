@@ -1,5 +1,3 @@
-# download_core_models.py
-
 from install_maxedout import download, MODEL_DIR
 from pathlib import Path
 
