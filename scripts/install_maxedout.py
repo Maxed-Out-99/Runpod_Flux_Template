@@ -51,9 +51,7 @@ signal.signal(signal.SIGINT, handle_interrupt)
 
 # ── Logging Setup ───────────────────────────────────────────────────────────
 def log(msg: str, **kwargs) -> None:
-    """Prints a message to the console and log file."""
-    print(msg)
-    # The time.sleep delay is removed for faster server execution.
+    print(msg, flush=True)
 
 # ── Core Utility Functions ──────────────────────────────────────────────────
 def _get_local_sha256(file_path: Path) -> str | None:
