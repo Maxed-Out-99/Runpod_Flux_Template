@@ -194,47 +194,53 @@ def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
     return written
 
 # ── Download Wrapper Function ────────────────────────────────────────────────
+# In /workspace/scripts/install_maxedout.py
+
 def download(remote_path: str, local_path: Path, expected_sha256: str) -> None:
-    """Main download wrapper with retries, resume, and hash checking."""
+    """
+    Main download wrapper with retries, resume, and hash checking,
+    featuring improved logging.
+    """
+    local_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Pre-download check
     if local_path.exists():
-        log(f"✅ File already exists: {local_path.name}. Verifying hash...")
         local_hash = _get_local_sha256(local_path)
         if local_hash and local_hash.lower() == expected_sha256.lower():
-            log("   ✅ Hash matches. Skipping download.")
+            log(f"✅ Hash matches for {local_path.name}. Skipping.")
             return
         else:
-            log("   ⚠️ Hash mismatch or unreadable. Re-downloading.")
+            log(f"⚠️ Hash mismatch for {local_path.name}. Re-downloading.")
             local_path.unlink()
 
+    # 2. Download loop
     url = f"{BASE_URL}/{remote_path}"
     tmp_path = local_path.with_suffix(".part")
-    local_path.parent.mkdir(parents=True, exist_ok=True)
-
+    
     for attempt in range(1, RETRIES + 1):
         try:
             log(f"⬇️  Downloading {local_path.name} (Attempt {attempt}/{RETRIES})")
-            resume_flag = tmp_path.exists()
-            _download_once(url, tmp_path, resume=resume_flag)
+            _download_once(url, tmp_path, resume=tmp_path.exists())
             
+            # 3. Post-download verification
             final_hash = _get_local_sha256(tmp_path)
             if final_hash and final_hash.lower() == expected_sha256.lower():
                 tmp_path.rename(local_path)
-                log(f"   ✅ Download complete and verified: {local_path.name}")
-                return
+                log(f"   ✅ Verified: {local_path.name}")
+                return # Success
             else:
-                raise IOError(f"Corrupted download - SHA256 mismatch.")
+                raise IOError("Corrupted download - SHA256 mismatch.")
         
         except Exception as e:
             log(f"   ⚠️ Download failed: {e}")
             if tmp_path.exists():
-                try:
-                    tmp_path.unlink()
-                except OSError as unlink_err:
-                    log(f"   ⚠️ Could not delete .part file: {unlink_err}")
+                try: tmp_path.unlink()
+                except OSError as err: log(f"   ⚠️ Could not delete .part file: {err}")
+            
             if attempt < RETRIES:
                 time.sleep(2 * 2**attempt)
             else:
-                log(f"   ❌ Giving up after {RETRIES} attempts.")
+                log(f"   ❌ Giving up on {local_path.name} after {RETRIES} attempts.")
                 FAILED_FILES.append((remote_path, str(local_path)))
 
 # ── Model File Lists ────────────────────────────────────────────────────────

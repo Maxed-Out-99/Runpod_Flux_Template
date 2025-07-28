@@ -240,7 +240,7 @@ def download_status(version):
     except Exception:
         return {"status": "error"}
 
-# Download Mega files
+
 @app.route("/download/<version>")
 def download_mega(version):
     script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
@@ -256,12 +256,16 @@ def download_mega(version):
     # Use a FIXED, predictable log file name
     log_file_path = "/workspace/logs/power_user_downloads.log"
     done_file = f"/workspace/logs/download_{version}.done"
+    
+    # --- THIS IS THE FIX ---
+    # Ensure the /workspace/logs directory exists before trying to write to it.
+    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
     # Clean up old files before starting a new download
     if os.path.exists(done_file):
         os.remove(done_file)
     if os.path.exists(log_file_path):
-        os.remove(log_file_path) # Optional: clear old log on new run
+        os.remove(log_file_path)
 
     try:
         # Open the log file in append mode and start the process

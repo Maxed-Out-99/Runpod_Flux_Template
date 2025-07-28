@@ -59,7 +59,7 @@ RUN pip install --no-cache-dir \
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 
 # Copy scripts and workflows
-COPY --chmod=755 start.sh /opt/start.sh
+COPY --chmod=755 start.sh /workspace/start.sh
 COPY --chmod=644 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 COPY custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
@@ -93,7 +93,7 @@ EXPOSE 8188
 EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
-  curl -f http://localhost:8188/ || curl -f http://localhost:7860/ || exit 1
+  curl -f http://localhost:8188/ || curl -f http://localhost:7860/ || curl -f http://localhost:8888/ || exit 1
 
 # Entrypoint
-CMD ["/opt/start.sh"]
+CMD ["/workspace/start.sh"]

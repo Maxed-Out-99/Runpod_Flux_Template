@@ -31,24 +31,37 @@ jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupy
 JUPYTER_PID=$! # Capture JupyterLab's PID if you want to explicitly wait for it later, or just include it in `wait`
 
 # Python-based port check with timeout
-CHECK_INTERVAL=5
-TIMEOUT=60
+CHECK_INTERVAL=2
+TIMEOUT=90
 ELAPSED=0
 
-# ... (while loop code) ...
-while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
-  if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-    cat /workspace/comfyui.log
-    exit 1
-  fi
-  sleep "$CHECK_INTERVAL"
-  ELAPSED=$((ELAPSED + CHECK_INTERVAL))
-done
+# Function to check a port
+wait_for_port() {
+  local port=$1
+  local service_name=$2
+  local elapsed=0
+  echo "⌛ Waiting for $service_name on port $port..."
+  while ! nc -z 127.0.0.1 $port >/dev/null 2>&1; do
+    if [ "$elapsed" -ge "$TIMEOUT" ]; then
+      echo "❌ ERROR: $service_name failed to start within $TIMEOUT seconds."
+      # Optional: show the log for the failed service
+      [ -f "/workspace/${service_name,,}.log" ] && cat "/workspace/${service_name,,}.log"
+      exit 1
+    fi
+    sleep "$CHECK_INTERVAL"
+    elapsed=$((elapsed + CHECK_INTERVAL))
+  done
+  echo "✅ $service_name is ready."
+}
 
-# Add these lines to confirm ComfyUI is ready
-echo "✅ ComfyUI is listening on port 8188. Startup complete."
+# Wait for all services
+wait_for_port 8188 "ComfyUI"
+wait_for_port 8888 "JupyterLab"
+wait_for_port 7860 "Patreon Unlock Server"
+
 echo ""
+echo "✅ All services are running. Startup complete."
 echo ""
 
-# Keeps the container alive as long as ComfyUI runs
+# Keeps the container alive by waiting for the primary processes
 wait $COMFYUI_PID $JUPYTER_PID
