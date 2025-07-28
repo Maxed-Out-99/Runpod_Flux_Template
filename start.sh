@@ -25,6 +25,11 @@ echo "🚀 Starting ComfyUI..."
 python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/comfyui.log 2>&1 &
 COMFYUI_PID=$!
 
+# Add JupyterLab startup here
+echo "🚀 Starting JupyterLab..."
+jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyterlab.log 2>&1 &
+JUPYTER_PID=$! # Capture JupyterLab's PID if you want to explicitly wait for it later, or just include it in `wait`
+
 # Python-based port check with timeout
 CHECK_INTERVAL=5
 TIMEOUT=60
@@ -46,4 +51,4 @@ echo ""
 echo ""
 
 # Keeps the container alive as long as ComfyUI runs
-wait $COMFYUI_PID
+wait $COMFYUI_PID $JUPYTER_PID

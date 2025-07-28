@@ -28,6 +28,10 @@ RUN apt update && apt install -y \
 # Upgrade pip tools to known good versions
 RUN pip install --no-cache-dir pip==24.0 setuptools==70.0.0 wheel==0.43.0
 
+# Add Jupyter Notebook
+RUN pip3 install jupyterlab
+EXPOSE 8888
+
 # Set working directory
 WORKDIR /workspace
 
