@@ -5,6 +5,7 @@
 # OS junk
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Python stuff
 __pycache__/

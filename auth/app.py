@@ -218,6 +218,29 @@ def callback():
     print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
 
+@app.route('/download/status/<version>')
+def download_status(version):
+    log_file_path = "/workspace/logs/power_user_downloads.log"
+    done_file = f"/workspace/logs/download_{version}.done"
+
+    if os.path.exists(done_file):
+        return {"status": "complete"}
+
+    if not os.path.exists(log_file_path):
+        return {"status": "starting", "log_lines": ["Starting up..."]}
+
+    try:
+        with open(log_file_path, "r") as f:
+            # Get the last 10 lines of the log for progress
+            log_lines = f.readlines()[-10:] 
+        return {
+            "status": "downloading",
+            "log_lines": [line.strip() for line in log_lines]
+        }
+    except Exception:
+        return {"status": "error"}
+
+# Download Mega files
 @app.route("/download/<version>")
 def download_mega(version):
     script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
@@ -230,38 +253,41 @@ def download_mega(version):
     if not os.path.exists(script_path):
         return f"Script {script_name} not found.", 500
 
-    # Clean up any old ".done" files before starting a new download
+    # Use a FIXED, predictable log file name
+    log_file_path = "/workspace/logs/power_user_downloads.log"
     done_file = f"/workspace/logs/download_{version}.done"
+
+    # Clean up old files before starting a new download
     if os.path.exists(done_file):
         os.remove(done_file)
+    if os.path.exists(log_file_path):
+        os.remove(log_file_path) # Optional: clear old log on new run
 
     try:
-        log_dir = "/workspace/logs"
-        os.makedirs(log_dir, exist_ok=True)
-        log_file_path = os.path.join(log_dir, f"download_{version}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.log")
-        with open(log_file_path, "w") as log_file:
-            subprocess.Popen(["python3", script_path], stdout=log_file, stderr=subprocess.STDOUT,  cwd="/workspace/scripts")
+        # Open the log file in append mode and start the process
+        with open(log_file_path, "a") as log_file:
+            print(f"🚀 Starting download for '{version}'. Log: {log_file_path}")
+            subprocess.Popen(
+                ["python3", "-u", script_path], # Added -u for unbuffered output
+                stdout=log_file, 
+                stderr=subprocess.STDOUT,
+                cwd="/workspace/scripts"
+            )
     except Exception as e:
         print(f"🔥🔥🔥 CRITICAL ERROR trying to start subprocess for {script_name} 🔥🔥🔥")
         print(f"Exception: {e}")
         return "An unexpected error occurred while trying to start the download.", 500
 
-    # Redirect to the new status-checking page
+    # Redirect to the existing status-checking page
     return redirect(f"/downloading/{version}")
 
 @app.route("/downloading/<version>")
-def downloading_status(version):
+def downloading_page(version):
+    # This route's only job is to show the page.
+    # The JavaScript on the page will handle all status checks.
     if version not in ["all", "small"]:
         return "Invalid version specified", 404
-        
-    done_file = f"/workspace/logs/download_{version}.done"
-    
-    if os.path.exists(done_file):
-        # The .done file exists, so redirect to success with a "complete" message
-        return redirect(f"/success?status={version}_complete")
-    else:
-        # The .done file is not there yet, show the waiting page
-        return send_file("/workspace/auth/downloading.html")
+    return send_file("/workspace/auth/downloading.html")
 
 # Add this entire new function to app.py
 @app.route('/images/<path:filename>')
