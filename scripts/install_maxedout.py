@@ -259,6 +259,14 @@ def get_model_files(schnell: bool = False):
         ("Flux1/unet/Fill/flux1-fill-dev-fp8.safetensors", "diffusion_models/flux1-fill-dev-fp8.safetensors", "0320d505ca42bca99c5bd600b1839ced2b2e980ea985917965d411d98a710729"),
         ("Flux1/unet/Canny/flux1-canny-dev-fp8.safetensors", "diffusion_models/flux1-canny-dev-fp8.safetensors", "3225da20cfcf18a0537147acb5f57fa11f75ff568827cadcfcbba3289f136574"),
         ("Flux1/unet/Depth/flux1-depth-dev-fp8.safetensors", "diffusion_models/flux1-depth-dev-fp8.safetensors", "4206c6b3f737d350170e2ac9f5b4facf15cb25f1da813608023caf6a34d4edef"),
+
+        # FP16 UNETs
+        ("Flux1/unet/Fill/flux1-fill-dev-fp16.safetensors", "diffusion_models/flux1-fill-dev-fp16.safetensors", "03e289f530df51d014f48e675a9ffa2141bc003259bf5f25d75b957e920a41ca"),
+        ("Flux1/unet/Canny/flux1-canny-dev-fp16.safetensors", "diffusion_models/flux1-canny-dev-fp16.safetensors", "996876670169591cb412b937fbd46ea14cbed6933aef17c48a2dcd9685c98cdb"),
+        ("Flux1/unet/Depth/flux1-depth-dev-fp16.safetensors", "diffusion_models/flux1-depth-dev-fp16.safetensors", "41360d1662f44ca45bc1b665fe6387e91802f53911001630d970a4f8be8dac21"),
+        ("Flux1/unet/Schnell/flux1-schnell-fp16.safetensors", "diffusion_models/flux1-schnell-fp16.safetensors", "9403429e0052277ac2a87ad800adece5481eecefd9ed334e1f348723621d2a0a"),
+        ("Flux1/unet/Dev/flux1-dev-fp16.safetensors", "diffusion_models/flux1-dev-fp16.safetensors", "4610115bb0c89560703c892c59ac2742fa821e60ef5871b33493ba544683abd7"),
+
     ]
     if schnell:
         files.append(("Flux1/unet/Schnell/flux1-schnell-fp8.safetensors", "diffusion_models/flux1-schnell-fp8.safetensors", "bbdfba27fed8ff3be237523fb37b83821a6c4bbaa1db43ef9288767d0e4042fb"))

@@ -72,7 +72,7 @@ def download_mega_scripts():
         return "❌ HF_TOKEN not set.", 500
 
     base_url = "https://huggingface.co/MaxedOut/Power-User-Tools/resolve/main/scripts/"
-    scripts = ["download_all_mega_files.py", "download_small_mega_files.py"]
+    scripts = ["download_all_mega_files.py", "download_small_mega_files.py", "download_all_mega_files_fp8.py"]
     scripts_dir = "/workspace/scripts"
     os.makedirs(scripts_dir, exist_ok=True) # Ensure directory exists
     
@@ -239,7 +239,12 @@ def download_status(version):
 
 @app.route("/download/<version>")
 def download_mega(version):
-    script_map = {"all": "download_all_mega_files.py", "small": "download_small_mega_files.py"}
+    # ADDED 'all_fp8' to the script map
+    script_map = {
+        "all": "download_all_mega_files.py", 
+        "small": "download_small_mega_files.py",
+        "all_fp8": "download_all_mega_files_fp8.py"
+    }
     if version not in script_map:
         return "Invalid version specified", 404
 
@@ -285,7 +290,8 @@ def download_mega(version):
 def downloading_page(version):
     # This route's only job is to show the page.
     # The JavaScript on the page will handle all status checks.
-    if version not in ["all", "small"]:
+    # ADDED 'all_fp8' to the list of valid versions
+    if version not in ["all", "small", "all_fp8"]:
         return "Invalid version specified", 404
     return send_file("/workspace/auth/downloading.html")
 

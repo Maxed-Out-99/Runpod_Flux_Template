@@ -5,7 +5,7 @@ from install_maxedout import download, MODEL_DIR
 FILES = [
     ("Flux1/clip/t5xxl_fp16.safetensors", "clip/t5xxl_fp16.safetensors", "6e480b09fae049a72d2a8c5fbccb8d3e92febeb233bbe9dfe7256958a9167635"),
     ("Flux1/clip/clip_l.safetensors", "clip/clip_l.safetensors", "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"),
-    ("Flux1/unet/Dev/flux1-dev-fp8.safetensors", "diffusion_models/flux1-dev-fp8.safetensors", "1be961341be8f5307ef26c787199f80bf4e0de3c1c0b4617095aa6ee5550dfce"),
+    ("Flux1/unet/Dev/flux1-dev-fp16.safetensors", "diffusion_models/flux1-dev-fp16.safetensors", "4610115bb0c89560703c892c59ac2742fa821e60ef5871b33493ba544683abd7"),
     ("Flux1/vae/ae.safetensors", "vae/ae.safetensors", "afc8e28272cd15db3919bacdb6918ce9c1ed22e96cb12c4d5ed0fba823529e38"),
     ("Upscale_Models/RealESRGAN_x2plus.pth", "upscale_models/RealESRGAN_x2plus.pth", "49fafd45f8fd7aa8d31ab2a22d14d91b536c34494a5cfe31eb5d89c2fa266abb"),
     ("Upscale_Models/4x-UltraSharp.pth", "upscale_models/4x-UltraSharp.pth", "a5812231fc936b42af08a5edba784195495d303d5b3248c24489ef0c4021fe01"),
@@ -13,6 +13,7 @@ FILES = [
     ("Adetailer/Ultralytics/bbox/face_yolov8m.pt", "ultralytics/bbox/face_yolov8m.pt", "e3893a92c5c1907136b6cc75404094db767c1e0cfefe1b43e87dad72af2e4c9f"),
     ("Adetailer/Ultralytics/bbox/hand_yolov8s.pt", "ultralytics/bbox/hand_yolov8s.pt", "30878cea9870964d4a238339e9dcff002078bbbaa1a058b07e11c167f67eca1c"),
     ("Flux1/LoRas/navi_flux_v1.safetensors", "loras/navi_flux_v1.safetensors", "8c60d9038512bba3964bba0768771c2724a76cd41e5cfb5543dca8b84570e303"),
+    ("Flux1/Controlnets/flux_shakker_labs_union_pro-fp8.safetensors", "controlnet/flux_shakker_labs_union_pro-fp8.safetensors", "9535c82da8b4abb26eaf827e60cc3da401ed676ea85787f17b168a671b27e491"),
 ]
 
 def main():

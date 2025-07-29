@@ -21,6 +21,9 @@
         .button-secondary {
             background-color: #6c757d;
         }
+        .button-tertiary {
+            background-color: #28a745; /* Green for FP8 */
+        }
         .button:hover {
             opacity: 0.9;
         }
@@ -41,11 +44,12 @@
       <p>Your premium workflow has been downloaded automatically.</p>
       <p>Simply refresh the ComfyUI page to see it appear in the side bar (Press W).</p>
       <div class="button-container">
-          <h2>Download All Models?</h2>
-          <p>You can skip large unets (Canny, Depth, Fill) and download as needed with the "(Down)Load UNET MXD" node or simply download all models.</p>
-          <a href="/download/all" class="button">Download All Models</a>
+          <h2>Download Models?</h2>
+          <p>You can skip large UNETs (Canny, Depth, Fill) and download them as needed inside ComfyUI, or download them all now.</p>
+          <a href="/download/all" class="button">Download All Models (FP16)</a>
+          <a href="/download/all_fp8" class="button button-tertiary">Download All Models (FP8)</a>
           <p></p>
-          <a href="/download/small" class="button button-secondary">Download Only Small Models (Faster)</a>
+          <a href="/download/small" class="button button-secondary">Download Only Small Models</a>
       </div>
 
       <div id="status-message"></div>
@@ -58,11 +62,15 @@
             const messageDiv = document.getElementById('status-message');
 
             if (status === 'all_complete') {
-                messageDiv.textContent = '✅ Download complete for All Models!';
+                messageDiv.textContent = '✅ Download complete for All Models (FP16)!';
                 messageDiv.style.backgroundColor = '#2a5'; // Greenish color for success
                 messageDiv.style.display = 'block';
             } else if (status === 'small_complete') {
                 messageDiv.textContent = '✅ Download complete for Small Models!';
+                messageDiv.style.backgroundColor = '#2a5';
+                messageDiv.style.display = 'block';
+            } else if (status === 'all_fp8_complete') { // NEW status check for FP8
+                messageDiv.textContent = '✅ Download complete for All Models (FP8)!';
                 messageDiv.style.backgroundColor = '#2a5';
                 messageDiv.style.display = 'block';
             }
