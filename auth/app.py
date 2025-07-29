@@ -1,5 +1,4 @@
 import os
-import json
 import requests
 from flask import Flask, redirect, request, send_file, send_from_directory
 import subprocess
@@ -10,8 +9,6 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 app = Flask(__name__)
 
-# THIS IS YOUR NEW STATIC HELPER URL FROM STEP 2
-# Set it as an environment variable in your RunPod Template for best practice
 PATREON_HELPER_CALLBACK = os.environ.get("PATREON_HELPER_CALLBACK", "https://maxed-out-99.github.io/patreon-auth/callback.html")
 
 def get_env_var(key, required=True, default=None):
@@ -108,7 +105,6 @@ def success():
     print("✅ Success page reached.")
     return send_file("/workspace/auth/success.html")
 
-# NEW CODE -- USE THIS INSTEAD
 @app.route("/")
 def index():
     print("✅ Index page served.")
