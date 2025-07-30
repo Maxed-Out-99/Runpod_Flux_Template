@@ -8,7 +8,7 @@ from pathlib import Path
 # Set to True to also download the faster, lower-quality Schnell model.
 DOWNLOAD_SCHNELL = True
 # Set a specific commit hash for reproducibility.
-HF_COMMIT = "96710c9df25bfc5efddfe8e75b61ad2b71f12108"
+HF_COMMIT = "7e036e0bdf2cfd04d07668b768bc887b583f745c"
 
 # --- Global Variables ---
 BASE_URL = (

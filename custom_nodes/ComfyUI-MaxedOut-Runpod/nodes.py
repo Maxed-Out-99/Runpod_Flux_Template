@@ -9,17 +9,44 @@ from .install_maxedout import get_model_files, download, MODEL_DIR
 class MXD_UNETLoader:
     @classmethod
     def INPUT_TYPES(cls):
-        # Filter curated list for just UNETs in 'diffusion_models'
         curated = get_model_files()
-        cls._unet_map = {
-            local.split("/")[-1]: (path, local, sha)
-            for path, local, sha in curated
-            if local.startswith("diffusion_models/")
-        }
-
+        unet_choices = {}
+    
+        # Grouped buckets
+        fp8 = []
+        fp16 = []
+    
+        for path, local, sha in curated:
+            if not local.startswith("diffusion_models/"):
+                continue
+    
+            name = local.split("/")[-1]
+            if "-fp8" in name:
+                fp8.append((name, path, local, sha))
+            elif "-fp16" in name:
+                fp16.append((name, path, local, sha))
+    
+        # Build dict with headers
+        cls.UNET_CHOICES = {}
+        keys = []
+    
+        if fp8:
+            keys.append("— FP8 —")
+            cls.UNET_CHOICES["— FP8 —"] = None
+            for name, path, local, sha in sorted(fp8):
+                cls.UNET_CHOICES[name] = (path, local, sha)
+                keys.append(name)
+    
+        if fp16:
+            keys.append("— FP16 —")
+            cls.UNET_CHOICES["— FP16 —"] = None
+            for name, path, local, sha in sorted(fp16):
+                cls.UNET_CHOICES[name] = (path, local, sha)
+                keys.append(name)
+    
         return {
             "required": {
-                "unet_name": (list(cls._unet_map.keys()),),
+                "unet_name": (keys, {"default": fp8[0][0] if fp8 else ""}),
                 "weight_dtype": (
                     ["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"],
                 ),
@@ -42,7 +69,12 @@ class MXD_UNETLoader:
             model_options["dtype"] = torch.float8_e5m2
 
         # Resolve full HuggingFace path and expected hash
-        hf_path, local_rel_path, expected_sha = self._unet_map[unet_name]
+        meta = self.UNET_CHOICES.get(unet_name)
+        if meta is None:
+            raise ValueError(f"'{unet_name}' is a section header, not a valid UNET model.")
+        
+        hf_path, local_rel_path, expected_sha = meta
+
         local_path = MODEL_DIR / local_rel_path
 
         # Ensure model exists, download if needed
