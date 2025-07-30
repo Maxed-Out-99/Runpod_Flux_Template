@@ -1,5 +1,5 @@
 # Base image with CUDA 12.2 and Ubuntu 22.04
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 LABEL maintainer="maxedout.ai" \
       version="flux-v1" \
@@ -40,10 +40,6 @@ RUN pip3 install jupyterlab
 # Set working directory
 WORKDIR /workspace
 
-# Install PyTorch (with CUDA 12.2 support)
-RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu121
-
-
 # Clone ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
     cd /workspace/ComfyUI && \
@@ -51,6 +47,9 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 
 # Install ComfyUI base requirements
 RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
+
+# Install PyTorch (with CUDA 12.2 support)
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu121
 
 # Install insightface directly
 RUN pip install --no-cache-dir insightface==0.7.3

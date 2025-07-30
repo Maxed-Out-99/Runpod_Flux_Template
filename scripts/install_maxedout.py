@@ -195,7 +195,7 @@ def download(remote_path: str, local_path: Path, expected_sha256: str, show_prog
         local_hash = _get_local_sha256(local_path)
         if local_hash and local_hash.lower() == expected_sha256.lower():
             # This line is fine, it only runs when skipping.
-            log(f"INFO:: ✅ Skipping {local_path.name} (hash matches).")
+            log(f"INFO:: ✅ Skipping {local_path.name} (Hash Matches).")
             return
         else:
             log(f"⚠️ Hash mismatch for {local_path.name}. Re-downloading.")

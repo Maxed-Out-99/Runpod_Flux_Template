@@ -16,11 +16,13 @@ fi
 # 🔐 Start Patreon unlock server
 echo "🔐 Starting Patreon unlock server..."
 python3 -u /workspace/auth/app.py > /workspace/unlock.log 2>&1 &
+sleep 2
 
 # 🚀 Launch ComfyUI in the background
 echo "🚀 Starting ComfyUI..."
 python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/comfyui.log 2>&1 &
 COMFYUI_PID=$!
+sleep 2
 
 # Add JupyterLab startup here
 echo "🚀 Starting JupyterLab..."
