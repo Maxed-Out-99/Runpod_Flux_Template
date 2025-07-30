@@ -203,7 +203,19 @@ def download(remote_path: str, local_path: Path, expected_sha256: str, show_prog
 
     # 2. Download loop
     url = f"{BASE_URL}/{remote_path}"
+
+    try:
+        size_in_bytes = _remote_size(url)
+        # Set a threshold, e.g., 1 GB (1,000,000,000 bytes)
+        if size_in_bytes and size_in_bytes > 5_000_000_000:
+            size_in_gb = round(size_in_bytes / 1_073_741_824, 2)
+            log(f"   -> Note: This is a large file ({size_in_gb} GB) and may take several minutes.")
+    except Exception:
+        # If size check fails, just continue without the warning.
+        pass
+    
     tmp_path = local_path.with_suffix(".part")
+
     
     for attempt in range(1, RETRIES + 1):
         try:
