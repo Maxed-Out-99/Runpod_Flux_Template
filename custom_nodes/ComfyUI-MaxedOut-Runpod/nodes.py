@@ -4,7 +4,7 @@ import folder_paths
 import comfy.sd
 
 
-from .install_maxedout import get_model_files, download, MODEL_DIR
+from .install_maxedout_nodes import get_model_files, download, MODEL_DIR
 
 class MXD_UNETLoader:
     @classmethod

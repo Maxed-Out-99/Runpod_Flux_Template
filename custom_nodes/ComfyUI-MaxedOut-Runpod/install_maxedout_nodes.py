@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import annotations
-import sys, subprocess, time, atexit, signal, requests, hashlib, os
+import sys, subprocess, time, atexit, signal, requests, hashlib
 from pathlib import Path
 
 # --- Configuration for RunPod ---

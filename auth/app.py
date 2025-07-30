@@ -1,3 +1,4 @@
+# ─── Imports ────────────────────────────────────────────────────────────────
 import os
 import requests
 from flask import Flask, redirect, request, send_file, send_from_directory
@@ -6,11 +7,12 @@ from datetime import datetime, timedelta, timezone
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-
+#
 app = Flask(__name__)
 
 PATREON_HELPER_CALLBACK = os.environ.get("PATREON_HELPER_CALLBACK", "https://maxed-out-99.github.io/patreon-auth/callback.html")
 
+# ─── Utility Function to Get Environment Variables Safely ────────────────────────────────
 def get_env_var(key, required=True, default=None):
     # ... (rest of the function is the same) ...
     value = os.environ.get(key)
@@ -20,12 +22,12 @@ def get_env_var(key, required=True, default=None):
         return default
     return value.strip()
 
-# ✅ Use safe env var access
 CLIENT_ID = get_env_var("PATREON_CLIENT_ID")
 CLIENT_SECRET = get_env_var("PATREON_CLIENT_SECRET")
 CAMPAIGN_ID = "13913714"
 REQUIRED_TIER = "⚡ Power User"
 
+# ─── Download Functions ────────────────────────────────────────────────────────────────
 def download_flux_workflow():
     print("📦 Starting Power User workflow download...")
 
@@ -64,7 +66,7 @@ def download_flux_workflow():
     print(f"📦 Saved to: {output_path}")
     return "✅ File downloaded", 200
 
-# + NEW, MORE RELIABLE CODE
+# ─── Download Mega Helper Scripts ──────────────────────────────────────────────────────
 def download_mega_scripts():
     print("📥 Downloading Mega helper scripts...")
     hf_token = get_env_var("HF_TOKEN")
@@ -96,6 +98,7 @@ def download_mega_scripts():
     else:
         return "❌ Failed to download one or more helper scripts.", 500
 
+# ─── Flask Routes ────────────────────────────────────────────────────────────────
 @app.errorhandler(404)
 def not_found(e):
     return redirect("/")
@@ -196,7 +199,6 @@ def callback():
                 tier_title = tiers_by_id[tier_id].get('title', '')
                 print(f"-> Comparing API name '{tier_title}' with required name '{REQUIRED_TIER}'")
 
-                # --- NEW CODE ---
                 if tier_title == REQUIRED_TIER:
                     print("✅ Power User tier found!")
 
@@ -214,6 +216,7 @@ def callback():
     print("❌ Power User tier not found in user's memberships.")
     return send_file("/workspace/auth/fail.html"), 403
 
+# Step 3: Download status endpoint
 @app.route('/download/status/<version>')
 def download_status(version):
     log_file_path = "/workspace/logs/power_user_downloads.log"
@@ -223,20 +226,29 @@ def download_status(version):
         return {"status": "complete"}
 
     if not os.path.exists(log_file_path):
-        return {"status": "starting", "log_lines": ["Starting up..."]}
+        return {"status": "starting"}
 
     try:
-        with open(log_file_path, "r") as f:
-            # Get the last 10 lines of the log for progress
-            log_lines = f.readlines()[-10:] 
+        with open(log_file_path, "r", encoding='utf-8') as f:
+            lines = f.readlines() # Read lines with original spacing
+
+        # Find the last line for each progress type, then strip it for display
+        overall_line = next((line for line in reversed(lines) if line.startswith("OVERALL::")), "Waiting for overall progress...")
+        detail_line = next((line for line in reversed(lines) if line.startswith("   DETAIL::")), "")
+        info_line = next((line for line in reversed(lines) if line.startswith("INFO::")), "")
+
         return {
             "status": "downloading",
-            "log_lines": [line.strip() for line in log_lines]
+            "overall": overall_line.strip(),
+            "detail": detail_line.strip(),
+            "info": info_line.strip()
         }
-    except Exception:
+
+    except Exception as e:
+        print(f"Error reading log status: {e}")
         return {"status": "error"}
 
-
+# Step 4: Download Mega files
 @app.route("/download/<version>")
 def download_mega(version):
     # ADDED 'all_fp8' to the script map
@@ -254,11 +266,9 @@ def download_mega(version):
     if not os.path.exists(script_path):
         return f"Script {script_name} not found.", 500
 
-    # Use a FIXED, predictable log file name
     log_file_path = "/workspace/logs/power_user_downloads.log"
     done_file = f"/workspace/logs/download_{version}.done"
     
-    # --- THIS IS THE FIX ---
     # Ensure the /workspace/logs directory exists before trying to write to it.
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
@@ -286,16 +296,16 @@ def download_mega(version):
     # Redirect to the existing status-checking page
     return redirect(f"/downloading/{version}")
 
+# Step 5: Downloading page
 @app.route("/downloading/<version>")
 def downloading_page(version):
     # This route's only job is to show the page.
     # The JavaScript on the page will handle all status checks.
-    # ADDED 'all_fp8' to the list of valid versions
     if version not in ["all", "small", "all_fp8"]:
         return "Invalid version specified", 404
     return send_file("/workspace/auth/downloading.html")
 
-# Add this entire new function to app.py
+# Serve images
 @app.route('/images/<path:filename>')
 def serve_image(filename):
     """Serves images from the /workspace/auth/images/ directory."""

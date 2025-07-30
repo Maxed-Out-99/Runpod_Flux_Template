@@ -1,5 +1,6 @@
 from install_maxedout import download, MODEL_DIR
 from pathlib import Path
+from tqdm.auto import tqdm
 
 FILES = [
     ("Flux1/PuLID/pulid_flux_v0.9.1.safetensors", "pulid/pulid_flux_v0.9.1.safetensors", "92c41c3af322b02e58e1b32842e4601e08c8f16ec1fe80089dbe957df510f51d"),
@@ -8,9 +9,16 @@ FILES = [
 ]
 
 def main():
-    for remote, local, sha256 in FILES:
-        download(remote, MODEL_DIR / local, sha256)
-
+    total_files = len(FILES)
+    for i, (remote, local, sha256) in enumerate(FILES):
+        local_path = MODEL_DIR / local
+        
+        # Print the overall status for the web UI
+        print(f"OVERALL:: [{i + 1}/{total_files}] Now downloading: {local_path.name}")
+        
+        # Call download with show_progress=False
+        download(remote, local_path, sha256, show_progress=False)
+        
     Path("/workspace/logs/download_small.done").touch()
 
 if __name__ == "__main__":

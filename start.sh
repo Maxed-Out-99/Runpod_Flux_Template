@@ -2,9 +2,6 @@
 set -e
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
-# Run the custom node installer
-/opt/install_custom_nodes.sh
-
 # 📦 Install core models once
 INSTALL_LOCK="/workspace/.flux_installed"
 
@@ -27,15 +24,15 @@ COMFYUI_PID=$!
 
 # Add JupyterLab startup here
 echo "🚀 Starting JupyterLab..."
-jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyterlab.log 2>&1 &
-JUPYTER_PID=$! # Capture JupyterLab's PID if you want to explicitly wait for it later, or just include it in `wait`
+# This line is changed to use 'tee'
+jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root 2>&1 | tee /workspace/jupyterlab.log &
+JUPYTER_PID=$!
 
 # Python-based port check with timeout
 CHECK_INTERVAL=5
 TIMEOUT=60
 ELAPSED=0
 
-# ... (while loop code) ...
 while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
   if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
     cat /workspace/comfyui.log
@@ -50,5 +47,5 @@ echo "✅ ComfyUI is listening on port 8188. Startup complete."
 echo ""
 echo ""
 
-# Keeps the container alive as long as ComfyUI runs
+# Keeps the container alive as long as ComfyUI and JupyterLab run
 wait $COMFYUI_PID $JUPYTER_PID

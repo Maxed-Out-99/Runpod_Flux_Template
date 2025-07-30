@@ -6,17 +6,24 @@
         body { font-family: sans-serif; background: #1a1a1a; color: #eee; text-align: center; padding: 4em; }
         .container { max-width: 800px; margin: 0 auto; }
         h1 { color: #00ffff; }
-        #progress-log {
+
+        /* Styles for the log containers */
+        #overall-log, #detail-log {
             background-color: #000;
             border: 1px solid #333;
             border-radius: 5px;
             padding: 1em;
             text-align: left;
             font-family: monospace;
-            white-space: pre-wrap; /* Allows text to wrap */
-            height: 200px;
-            overflow-y: auto; /* Add scrollbar if content overflows */
-            margin-top: 2em;
+            white-space: pre; /* Use pre to respect spacing from tqdm */
+            margin-top: 1em;
+        }
+
+        #detail-log {
+            border-color: #555;
+            background-color: #111;
+            color: #ccc;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -24,36 +31,38 @@
     <div class="container">
         <h1>📥 Download in Progress...</h1>
         <p>Your models are being downloaded in the background. This may take several minutes.</p>
-        <p><strong>You will be redirected automatically when the download is complete.</strong></p>
-        <div id="progress-log"></div>
+        
+        <div id="overall-log"></div>
+        <div id="detail-log"></div>
+        <div id="info-log" style="color: #00ff88; margin-top: 1em; font-family: monospace;"></div>
     </div>
 
 <script>
-    const logContainer = document.getElementById('progress-log');
-    const version = window.location.pathname.split('/').pop(); // Get 'all' or 'small' from URL
-
+    const overallLog = document.getElementById('overall-log');
+    const detailLog = document.getElementById('detail-log');
+    const infoLog = document.getElementById('info-log');
+    const version = window.location.pathname.split('/').pop();
+    
     async function checkStatus() {
         try {
             const response = await fetch(`/download/status/${version}`);
             const data = await response.json();
-
+    
             if (data.status === 'complete') {
-                // Redirect to success page when done
                 window.location.href = `/success?status=${version}_complete`;
-            } else if (data.log_lines) {
-                // Update the log view on the page
-                logContainer.innerHTML = data.log_lines.join('\n');
-                // Auto-scroll to the bottom
-                logContainer.scrollTop = logContainer.scrollHeight;
+            } else if (data.overall) {
+                overallLog.textContent = data.overall;
+                detailLog.textContent = data.detail;
+                infoLog.textContent = data.info;
             }
         } catch (error) {
-            logContainer.textContent = "Error checking status...";
+            overallLog.textContent = "Error checking status...";
             console.error("Error:", error);
         }
     }
 
-    // Check the status every 5 seconds
-    const intervalId = setInterval(checkStatus, 5000);
+    // Check the status every 2.5 seconds for a more responsive feel
+    const intervalId = setInterval(checkStatus, 2500);
     
     // Run once immediately on page load
     checkStatus();

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from __future__ import annotations
-import sys, subprocess, time, atexit, signal, requests, hashlib, os
+import sys, subprocess, time, atexit, signal, requests, hashlib
 from pathlib import Path
+from tqdm.auto import tqdm
 
 # --- Configuration for RunPod ---
 # Set to True to also download the faster, lower-quality Schnell model.
@@ -141,14 +142,10 @@ def clone_custom_nodes():
         FAILED_FILES.append(("custom_nodes/ComfyUI-MaxedOut", "Initial Git clone failed"))
 
 # ── File Downloading Logic ────────────────────────────────────────────────
-def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
+def _download_once(url: str, tmp_path: Path, resume: bool = False, show_progress: bool = True) -> int:
     """
-    Performs a single download attempt, using a dynamic progress bar for
-    interactive terminals and simple start/end messages for log files.
+    Performs a single download attempt, using tqdm for the progress bar.
     """
-    # Check if we're in an interactive terminal (TTY)
-    is_tty = sys.stdout.isatty()
-    
     range_header, mode, start_byte = {}, "wb", 0
     if resume and tmp_path.exists():
         start_byte = tmp_path.stat().st_size
@@ -156,50 +153,40 @@ def _download_once(url: str, tmp_path: Path, resume: bool = False) -> int:
             range_header = {"Range": f"bytes={start_byte}-"}
             mode = "ab"
 
-    # For non-interactive logs, print a simple start message.
-    if not is_tty:
-        print(f"   📥 Downloading {tmp_path.name}...")
-
     with requests.get(url, stream=True, timeout=(10, 300), headers=range_header) as r:
         r.raise_for_status()
-        total_expected = int(r.headers.get("Content-Length", 0)) + start_byte
-        written = start_byte
-        last_print = time.time()
+        total_size = int(r.headers.get("Content-Length", 0))
 
         with open(tmp_path, mode) as f:
-            for chunk in r.iter_content(chunk_size=CHUNK):
-                f.write(chunk)
-                written += len(chunk)
-                
-                # If in an interactive terminal, show the detailed progress bar.
-                if is_tty:
-                    if TEST_MODE and written >= 1024 * 1024:
-                        print(f"🧪 Test mode: stopped at 1 MB for {tmp_path.name}")
-                        break
-                    now = time.time()
-                    if now - last_print >= PROG_INT or written == total_expected:
-                        pct = f" ({written / total_expected:.1%})" if total_expected > 0 else ""
-                        _orig_stdout.write(f"\r   📥 {tmp_path.name}{pct}  ")
-                        _orig_stdout.flush()
-                        last_print = now
+            if show_progress:
+                # This block runs only when show_progress is True
+                with tqdm(
+                    desc=f"   DETAIL:: {tmp_path.name}",
+                    total=total_size, initial=start_byte, unit='B', unit_scale=True,
+                    unit_divisor=1024, mininterval=PROG_INT, ncols=80, ascii=" #",
+                    bar_format='{l_bar}{bar:25}{r_bar}'
+                ) as pbar:
+                    for chunk in r.iter_content(chunk_size=CHUNK):
+                        f.write(chunk)
+                        pbar.update(len(chunk))
+            else:
+                # This block runs when show_progress is False, downloading silently
+                for chunk in r.iter_content(chunk_size=CHUNK):
+                    f.write(chunk)
 
-    # A final newline for the interactive progress bar to look clean.
-    if is_tty:
-        _orig_stdout.write("\n")
-        _orig_stdout.flush()
+    final_size = tmp_path.stat().st_size
+    if total_size != 0 and final_size != total_size + start_byte and not TEST_MODE:
+         raise IOError(f"Corrupted download: size mismatch (got {final_size}, expected {total_size + start_byte})")
 
-    if total_expected and written != total_expected and not TEST_MODE:
-        raise IOError(f"Corrupted download: size mismatch (got {written}, expected {total_expected})")
-
-    return written
+    return final_size
 
 # ── Download Wrapper Function ────────────────────────────────────────────────
-# In /workspace/scripts/install_maxedout.py
 
-def download(remote_path: str, local_path: Path, expected_sha256: str) -> None:
+# In install_maxedout.py, replace the whole function
+
+def download(remote_path: str, local_path: Path, expected_sha256: str, show_progress: bool = True) -> None:
     """
-    Main download wrapper with retries, resume, and hash checking,
-    featuring improved logging.
+    Main download wrapper with retries, resume, and hash checking.
     """
     local_path.parent.mkdir(parents=True, exist_ok=True)
     
@@ -207,7 +194,8 @@ def download(remote_path: str, local_path: Path, expected_sha256: str) -> None:
     if local_path.exists():
         local_hash = _get_local_sha256(local_path)
         if local_hash and local_hash.lower() == expected_sha256.lower():
-            log(f"✅ Hash matches for {local_path.name}. Skipping.")
+            # This line is fine, it only runs when skipping.
+            log(f"INFO:: ✅ Skipping {local_path.name} (hash matches).")
             return
         else:
             log(f"⚠️ Hash mismatch for {local_path.name}. Re-downloading.")
@@ -219,23 +207,27 @@ def download(remote_path: str, local_path: Path, expected_sha256: str) -> None:
     
     for attempt in range(1, RETRIES + 1):
         try:
-            log(f"⬇️  Downloading {local_path.name} (Attempt {attempt}/{RETRIES})")
-            _download_once(url, tmp_path, resume=tmp_path.exists())
+            # The old "Downloading..." log message that interfered with the UI is removed.
+            
+            # The `show_progress` flag is correctly passed down now.
+            _download_once(url, tmp_path, resume=tmp_path.exists(), show_progress=show_progress)
             
             # 3. Post-download verification
             final_hash = _get_local_sha256(tmp_path)
             if final_hash and final_hash.lower() == expected_sha256.lower():
                 tmp_path.rename(local_path)
-                log(f"   ✅ Verified: {local_path.name}")
+                log(f"INFO:: ✅ Verified: {local_path.name}")
                 return # Success
             else:
                 raise IOError("Corrupted download - SHA256 mismatch.")
         
         except Exception as e:
-            log(f"   ⚠️ Download failed: {e}")
+            log(f"   ⚠️ Download failed on attempt {attempt}: {e}")
             if tmp_path.exists():
-                try: tmp_path.unlink()
-                except OSError as err: log(f"   ⚠️ Could not delete .part file: {err}")
+                try: 
+                    tmp_path.unlink()
+                except OSError as err: 
+                    log(f"   ⚠️ Could not delete .part file: {err}")
             
             if attempt < RETRIES:
                 time.sleep(2 * 2**attempt)

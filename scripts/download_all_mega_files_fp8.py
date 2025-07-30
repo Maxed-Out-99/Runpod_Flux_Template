@@ -1,5 +1,6 @@
 from install_maxedout import download, MODEL_DIR
 from pathlib import Path
+from tqdm.auto import tqdm
 
 FILES = [
     ("Flux1/unet/Fill/flux1-fill-dev-fp8.safetensors", "diffusion_models/flux1-fill-dev-fp8.safetensors", "0320d505ca42bca99c5bd600b1839ced2b2e980ea985917965d411d98a710729"),
@@ -12,8 +13,16 @@ FILES = [
 ]
 
 def main():
-    for remote, local, sha256 in FILES:
-        download(remote, MODEL_DIR / local, sha256)
+    total_files = len(FILES)
+    for i, (remote, local, sha256) in enumerate(FILES):
+        local_path = MODEL_DIR / local
+        
+        # This was missing the filename. Added it back.
+        print(f"OVERALL:: [{i + 1}/{total_files}] Now downloading: {local_path.name}")
+        
+        # This was missing show_progress=False. Added it back.
+        download(remote, local_path, sha256, show_progress=False)
+        
     Path("/workspace/logs/download_all_fp8.done").touch()
 
 if __name__ == "__main__":

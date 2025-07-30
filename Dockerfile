@@ -1,6 +1,12 @@
 # Base image with CUDA 12.2 and Ubuntu 22.04
 FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
+LABEL maintainer="maxedout.ai" \
+      version="flux-v1" \
+      description="RunPod-ready container for ComfyUI + Patreon-auth + Flux"
+
+ENV PYTHONUNBUFFERED=1
+
 # Set build args for flexibility
 ARG PYTORCH_VERSION=2.5.1
 ARG TORCHVISION_VERSION=0.20.1
@@ -30,10 +36,13 @@ RUN pip install --no-cache-dir pip==24.0 setuptools==70.0.0 wheel==0.43.0
 
 # Add Jupyter Notebook
 RUN pip3 install jupyterlab
-EXPOSE 8888
 
 # Set working directory
 WORKDIR /workspace
+
+# Install PyTorch (with CUDA 12.2 support)
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu121
+
 
 # Clone ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
@@ -46,9 +55,6 @@ RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.t
 # Install insightface directly
 RUN pip install --no-cache-dir insightface==0.7.3
 RUN pip install --no-cache-dir --use-pep517 facexlib
-
-# Install PyTorch (with CUDA 12.2 support)
-RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} torchaudio==${PYTORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cu121
 
 RUN pip install --no-cache-dir \
     invisible-watermark \
@@ -87,6 +93,8 @@ RUN /opt/install_custom_nodes.sh
 EXPOSE 8188
 # Expose Patreon unlock server port
 EXPOSE 7860
+# Expose JupyterLab port
+EXPOSE 8888
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
   curl -f http://localhost:8188/ || curl -f http://localhost:7860/ || curl -f http://localhost:8888/ || exit 1

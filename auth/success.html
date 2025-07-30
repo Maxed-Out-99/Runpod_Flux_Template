@@ -2,79 +2,185 @@
   <head>
     <title>✅ Mega Flux Unlocked</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: #eee; text-align: center; padding: 2em; }
-        .container { max-width: 600px; margin: 0 auto; background: #2a2a2a; padding: 2em; border-radius: 8px; }
-        h1 { color: #00ff99; }
-        a { color: #00ffff; text-decoration: none; font-weight: bold; }
-        a:hover { text-decoration: underline; }
-        .button-container { margin-top: 2em; border-top: 1px solid #444; padding-top: 2em; }
-        .button {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin: 5px;
-        }
-        .button-secondary {
-            background-color: #D6C500;
-        }
-        .button-tertiary {
-            background-color: #28a745; /* Green for FP8 */
-        }
-        .button:hover {
-            opacity: 0.9;
-        }
-        #status-message {
-            margin-top: 1em;
-            padding: 1em;
-            border-radius: 5px;
-            background-color: #334;
-            color: #ccf;
-            display: none; /* Hidden by default */
-        }
+      body {
+        font-family: sans-serif;
+        background: #111;
+        color: #eee;
+        text-align: center;
+        padding: 2em;
+      }
+
+      .container {
+        max-width: 650px;
+        margin: 0 auto;
+        background: #222;
+        padding: 2.5em;
+        border-radius: 12px;
+        box-shadow: 0 0 20px #0006;
+      }
+
+      h1 {
+        color: #00ff88;
+        font-size: 2em;
+        margin-bottom: 0.5em;
+      }
+
+      p {
+        line-height: 1.6;
+        margin: 0.5em 0;
+      }
+
+      .section {
+        margin-top: 2.5em;
+        padding-top: 1.5em;
+        border-top: 1px solid #444;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 12px 22px;
+        margin: 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.95em;
+        transition: 0.2s ease;
+        color: white;
+      }
+
+      .button:hover {
+        opacity: 0.9;
+      }
+
+      .btn-fp16 {
+        background-color: #007bff;
+      }
+
+      .btn-fp8 {
+        background-color: #28a745;
+      }
+
+      .btn-small {
+        background-color: #d6c500;
+        color: #111;
+      }
+
+      .tag {
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        font-size: 0.75em;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 6px;
+      }
+
+      .button-info {
+        font-size: 0.85em;
+        color: #bbb;
+        margin-top: -6px;
+        margin-bottom: 12px;
+      }
+
+      #download-help {
+        display: none;
+        font-size: 0.95em;
+        text-align: left;
+        margin-top: 1em;
+        background-color: #1b1b1b;
+        padding: 1em;
+        border-radius: 6px;
+        border: 1px solid #333;
+      }
+
+      #status-message {
+        margin-top: 2em;
+        padding: 1em;
+        border-radius: 8px;
+        background-color: #2a5;
+        color: #fff;
+        display: none;
+      }
+
+      a.toggle-link {
+        font-size: 0.9em;
+        color: #00ccff;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      a.toggle-link:hover {
+        color: #66d9ff;
+      }
     </style>
   </head>
+
   <body>
     <div class="container">
       <h1>✅ Mega Flux Unlocked</h1>
-      <p>You've been verified as a Power User.</p>
+      <p>You’ve been verified as a Power User.</p>
       <p>Your premium workflow has been downloaded automatically.</p>
-      <p>Simply refresh the ComfyUI page to see it appear in the side bar (Press W).</p>
-      <div class="button-container">
-          <h2>Download Models?</h2>
-          <p>You can skip large UNETs (Canny, Depth, Fill) and download them as needed inside ComfyUI, or download them all now.</p>
-          <a href="/download/all" class="button">Download All Models (FP16)</a>
-          <a href="/download/all_fp8" class="button button-tertiary">Download All Models (FP8)</a>
-          <p></p>
-          <a href="/download/small" class="button button-secondary">Download Only Small Models</a>
+      <p>To see it inside ComfyUI, just refresh the page (then press <strong>W</strong>).</p>
+
+      <div class="section">
+        <h2>⬇️ Download Models</h2>
+        <p><strong>Not sure?</strong> Use FP8. It's the best choice for most pods.</p>
+
+        <div>
+          <div class="tag">✅ Recommended</div><br />
+          <a href="/download/all_fp8" class="button btn-fp8">Download All Models (FP8)</a>
+          <p class="button-info">Fast download. Works great on most pods.</p>
+        </div>
+
+        <div>
+          <a href="/download/all" class="button btn-fp16">Download All Models (FP16)</a>
+          <p class="button-info">Full precision. Only use if your pod has more than 24 GB VRAM.</p>
+        </div>
+
+        <div>
+          <a href="/download/small" class="button btn-small">Download Only Small Models</a>
+          <p class="button-info">Skips UNETs. You can install them later inside ComfyUI.</p>
+        </div>
+
+        <p><a class="toggle-link" onclick="toggleDetails()">Need help choosing a download option?</a></p>
+
+        <div id="download-help">
+        <strong>Download All Models (FP8):</strong><br />
+        Best for general use. UNETs are lower precision (FP8), which reduces file size and memory use.
+        <br /><br />
+
+        <strong>Download All Models (FP16):</strong><br />
+        Includes full precision UNETs (FP16). Only recommended if your pod has more than 24 GB VRAM (eg. 5090) and you specifically want max quality.
+        <br /><br />
+
+        <strong>Download Only Small Models:</strong><br />
+        Fastest. This skips the large UNETs (Canny, Depth, Fill). You can download models as needed in ComfyUI using the "(Down)Load UNET MXD" node.
+        </div>
       </div>
 
       <div id="status-message"></div>
     </div>
 
     <script>
-            // Display a message if the URL has a 'status' parameter
-            const params = new URLSearchParams(window.location.search);
-            const status = params.get('status');
-            const messageDiv = document.getElementById('status-message');
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('status');
+      const messageDiv = document.getElementById('status-message');
 
-            if (status === 'all_complete') {
-                messageDiv.textContent = '✅ Download complete for All Models (FP16)!';
-                messageDiv.style.backgroundColor = '#2a5'; // Greenish color for success
-                messageDiv.style.display = 'block';
-            } else if (status === 'small_complete') {
-                messageDiv.textContent = '✅ Download complete for Small Models!';
-                messageDiv.style.backgroundColor = '#2a5';
-                messageDiv.style.display = 'block';
-            } else if (status === 'all_fp8_complete') { // NEW status check for FP8
-                messageDiv.textContent = '✅ Download complete for All Models (FP8)!';
-                messageDiv.style.backgroundColor = '#2a5';
-                messageDiv.style.display = 'block';
-            }
-        </script>
+      if (status === 'all_complete') {
+        messageDiv.textContent = '✅ Download complete for All Models (FP16)!';
+        messageDiv.style.display = 'block';
+      } else if (status === 'small_complete') {
+        messageDiv.textContent = '✅ Download complete for Small Models!';
+        messageDiv.style.display = 'block';
+      } else if (status === 'all_fp8_complete') {
+        messageDiv.textContent = '✅ Download complete for All Models (FP8)!';
+        messageDiv.style.display = 'block';
+      }
 
+      function toggleDetails() {
+        const helpBox = document.getElementById("download-help");
+        helpBox.style.display = helpBox.style.display === "none" ? "block" : "none";
+      }
+    </script>
   </body>
 </html>

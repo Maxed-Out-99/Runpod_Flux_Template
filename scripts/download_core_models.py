@@ -1,7 +1,9 @@
-# download_core_models.py
-
+# ─── Imports ────────────────────────────────────────────────────────────────
 from install_maxedout import download, MODEL_DIR
+from tqdm.auto import tqdm
+from pathlib import Path
 
+# ─── Files To Download ─────────────────────────────────────────────────────────────
 FILES = [
     ("Flux1/clip/t5xxl_fp16.safetensors", "clip/t5xxl_fp16.safetensors", "6e480b09fae049a72d2a8c5fbccb8d3e92febeb233bbe9dfe7256958a9167635"),
     ("Flux1/clip/clip_l.safetensors", "clip/clip_l.safetensors", "660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd"),
@@ -16,9 +18,19 @@ FILES = [
     ("Flux1/Controlnets/flux_shakker_labs_union_pro-fp8.safetensors", "controlnet/flux_shakker_labs_union_pro-fp8.safetensors", "9535c82da8b4abb26eaf827e60cc3da401ed676ea85787f17b168a671b27e491"),
 ]
 
+# ─── Main Function ─────────────────────────────────────────────────────────────
 def main():
-    for remote, local, sha256 in FILES:
-        download(remote, MODEL_DIR / local, sha256)
+    print("--- Starting Core Model Download ---")
+    total_files = len(FILES)
 
+    for i, (remote, local, sha256) in enumerate(FILES):
+        # This provides a clean, single-line status in the main log
+        print(f"[{i + 1}/{total_files}] Downloading {Path(local).name}...")
+        # We hide the detail bar to keep the main log uncluttered
+        download(remote, MODEL_DIR / local, sha256, show_progress=False)
+
+    print("--- Core Model Download Complete ---")
+
+# ─── Entry Point ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     main()
