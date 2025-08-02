@@ -2,6 +2,8 @@
 set -e
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
+echo "🔥 STARTING FLUX V1 @ $(date) — Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
+
 # 📦 Install core models once
 INSTALL_LOCK="/workspace/.flux_installed"
 
