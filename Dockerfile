@@ -60,7 +60,7 @@ RUN pip install --no-cache-dir \
     onnx onnxruntime \
     opencv-python
 
-# Force reinstall correct NumPy
+# Reinstall correct NumPy
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 
 # Copy scripts and workflows
