@@ -29,6 +29,7 @@ RUN apt update && apt install -y \
     libgl1 \
     ffmpeg \
     ninja-build \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip tools to known good versions

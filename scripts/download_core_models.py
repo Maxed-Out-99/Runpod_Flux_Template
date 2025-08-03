@@ -26,7 +26,7 @@ def main():
         # This provides a clean, single-line status in the main log
         print(f"[{i + 1}/{total_files}] Downloading {Path(local).name}...")
         # We hide the detail bar to keep the main log uncluttered
-        download(remote, MODEL_DIR / local, sha256, show_progress=False)
+        download(remote, MODEL_DIR / local, sha256, show_progress=True)
 
     print("--- Core Model Download Complete ---")
 

@@ -26,13 +26,29 @@ python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/com
 COMFYUI_PID=$!
 sleep 2
 
-# Add JupyterLab startup here
+# ─── BEST JUPYTER STARTUP (requires jq) ──────────────────────────────────
 echo "🚀 Starting JupyterLab..."
-# This line is changed to use 'tee'
-jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root 2>&1 | tee /workspace/jupyterlab.log &
+# Start Jupyter in the background
+jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyterlab.log 2>&1 &
 JUPYTER_PID=$!
 
-# Python-based port check with timeout
+# Wait for the Jupyter server to be fully running
+echo "✅ Waiting for JupyterLab server to respond..."
+while ! jupyter server list > /dev/null 2>&1; do
+  sleep 1
+done
+
+# Get the token directly from the server command
+TOKEN=$(jupyter server list --json | jq -r '.[0].token')
+
+# Print the clean token for easy copying
+echo ""
+echo "JUPYTERLAB TOKEN: ${TOKEN}"
+echo "(You may need this to log in to JupyterLab)"
+echo ""
+# ───────────────────────────────────────────────────────────────────────────
+
+# Wait for ComfyUI to be ready
 CHECK_INTERVAL=5
 TIMEOUT=60
 ELAPSED=0
