@@ -43,7 +43,7 @@ WORKDIR /workspace
 # Clone ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
     cd /workspace/ComfyUI && \
-    git checkout 27870ec3c30e56be9707d89a120eb7f0e2836be1
+    git checkout aebac221937b511d46fe601656acdc753435b849
 
 # Install ComfyUI base requirements
 RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
