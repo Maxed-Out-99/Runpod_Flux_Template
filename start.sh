@@ -26,7 +26,7 @@ python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/com
 COMFYUI_PID=$!
 sleep 2
 
-# ─── BEST JUPYTER STARTUP (requires jq) ──────────────────────────────────
+# ─── CORRECTED JUPYTER STARTUP ───────────────────────────────────────────
 echo "🚀 Starting JupyterLab..."
 # Start Jupyter in the background
 jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyterlab.log 2>&1 &
@@ -38,8 +38,8 @@ while ! jupyter server list > /dev/null 2>&1; do
   sleep 1
 done
 
-# Get the token directly from the server command
-TOKEN=$(jupyter server list --json | jq -r '.[0].token')
+# Get the token directly from the server command (using the simpler, correct jq filter)
+TOKEN=$(jupyter server list --json | jq -r '.token')
 
 # Print the clean token for easy copying
 echo ""
