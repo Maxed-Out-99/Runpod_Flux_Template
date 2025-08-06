@@ -106,7 +106,9 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         py-cpuinfo \
         jetson-stats \
         dill \
-        git+https://github.com/facebookresearch/sam2 \
+        pycocotools \
+        tqdm \
+        --no-deps git+https://github.com/facebookresearch/sam2
 
 
     # Run special installation scripts for specific nodes
