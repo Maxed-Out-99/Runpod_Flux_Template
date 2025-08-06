@@ -108,8 +108,7 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         dill \
         pycocotools \
         tqdm \
-        --no-deps git+https://github.com/facebookresearch/sam2
-
+        --no-build-isolation --no-deps git+https://github.com/facebookresearch/sam2
 
     # Run special installation scripts for specific nodes
     echo "--- Running installer for Impact Pack ---"
