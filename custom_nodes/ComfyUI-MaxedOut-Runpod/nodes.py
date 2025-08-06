@@ -9,7 +9,7 @@ from .install_maxedout_nodes import get_model_files, download, MODEL_DIR
 class MXD_UNETLoader:
     @classmethod
     def INPUT_TYPES(cls):
-        curated = get_model_files()
+        curated = get_model_files(schnell=True)
         unet_choices = {}
         
         # Grouped buckets

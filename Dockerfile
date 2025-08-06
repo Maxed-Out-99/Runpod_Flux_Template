@@ -1,6 +1,5 @@
 # Base image
-FROM nvidia/cuda:12.8.1-runtime-ubuntu22.04
-
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 
 LABEL maintainer="maxedout.ai" \
       version="flux-v1" \
@@ -47,7 +46,7 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
 
 # Install latest PyTorch nightlies with CUDA 12.8 support (for 5090 compatibility)
-RUN pip install --no-cache-dir --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+RUN pip install --no-cache-dir torch==2.7.1 torchvision==0.22.1+cu128 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
 
 # Install insightface directly
 RUN pip install --no-cache-dir insightface==0.7.3
