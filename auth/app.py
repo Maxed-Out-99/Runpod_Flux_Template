@@ -25,7 +25,7 @@ def get_env_var(key, required=True, default=None):
 CLIENT_ID = get_env_var("PATREON_CLIENT_ID")
 CLIENT_SECRET = get_env_var("PATREON_CLIENT_SECRET")
 CAMPAIGN_ID = "13913714"
-REQUIRED_TIER = "⚡ Power User"
+REQUIRED_TIERS = ["⚡ Power User", "🗝️ Keyholder"]
 
 # ─── Download Functions ────────────────────────────────────────────────────────────────
 def download_flux_workflow():
