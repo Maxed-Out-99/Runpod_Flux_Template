@@ -1,103 +1,74 @@
-# Read Me Is a Work In Progress
+# ⚡️ ComfyUI Flux Runpod Template
 
-# Flux – ComfyUI RunPod Template
-
-## 🧠 Overview
-Welcome to the one-click deployment template for **Flux** on RunPod.  
-This setup runs **ComfyUI** with my custom **Flux workflows**, including optional Patreon auth, auto-downloaders, and full 5090 support.
+Ready-to-run **ComfyUI** template for RunPod, designed around my offical **Flux Workflows**.
 
 ---
 
-## 🚀 Features
+## 🧠 Workflows:
 
-- Newer version of ComfyUI
-- Template includes Level 1 and Level 2 Flux workflows by Maxed Out
-- **Patreon unlock system** for one-click access to the premium all in one Mega Flux workflow
-- **All nodes preinstalled**
-- **Default workflows include**:
-  - ✅ Mega Flux v1
-  - ✅ Text to Image
-  - ✅ Image to Image
-  - ✅ Simple Upscale
-  - ✅ Image to Text
-  - ✅ ADetailer
-  - ☐ Inpainting
-  - ☐ Outpainting
-  - ☐ Advanced Upscale
-- **JupyterLab** included + easy login
+### 💪 Level 1 + Level 2 _(Free and included)_
+**Ideal entry-points** for casual and intermediate creators.
+
+<img width="1080" alt="Level 1 and 2" src="https://github.com/user-attachments/assets/d70aa818-b6fa-4f1a-9ed5-b0e12589e61c" />
+
+### 🔓 Mega Flux Workflow _(Premium)_
+My all in one Flux Workflow. Unlocked via a simple **Patreon login**.
+
+<img width="1080" alt="Mega Flux" src="https://github.com/user-attachments/assets/fbe99440-d4ed-412d-881c-d456a811a802" />
+
+> 
+> 📌 **More Workflows Available**:
+> On my [Patreon](https://www.patreon.com/MaxedOut99), I released **exclusive Flux Kontext and SDXL workflows** tailored specifically for efficient local generation.
 
 ---
 
-## 🛠️ Getting Started
+## Deploy Here 👇
 
-### 1. Deploy the Template  
-👉 [Click here to launch on RunPod](https://console.runpod.io/deploy?template=9gp9erptr8&ref=q513csod)
-
-### 2. Network Volume (Optional but Recommended)  
-If using a RunPod volume:
-- Models persist across pods
-- First launch populates it automatically
-- Future launches are much faster
+▶️ [Launch Flux Template (4090 Recommended)](https://console.runpod.io/deploy?template=f7q274yd7u&ref=q513csod)
 
 ---
 
-## 💻 JupyterLab
+## 🚀 Dedicated 5090 Template (**Maxed Out** Quality 🤯)
+Unlocks Flux’s full potential with fast performance while using full FP16 precision for **maximum quality**.
 
-Token is printed in the RunPod logs.
-
-**To upload models or files:**
-1. Click “📂 JupyterLab”
-2. Copy the token from the logs
-3. Paste it when prompted
-
-You're now inside your pod and can upload files directly.
+👉 [Launch Flux 5090 Template](https://console.runpod.io/deploy?template=9gp9erptr8&ref=q513csod)
 
 ---
 
-## 🧩 Workflow Previews
+## 🔎 Feature Breakdown
 
-*(Optional section for screenshots if desired)*
-
-| Workflow          | Description               |
-|------------------|---------------------------|
-| Mega Flux v1     | General-purpose generation |
-| Inpainting        | Mask-based editing         |
-| Outpainting       | Scene expansion            |
-| Conditioning Cascade | Prompt stacking testbed |
+- **Instant Setup**: Level 1 and 2 Flux workflows preloaded.
+- **Zero Headache**: All nodes preinstalled.
+- **Smart UNET Loader**: Downloads required models seamlessly as needed.
+- **Easy File Management**: JupyterLab for hassle-free file uploads. Login Token displayed in logs.
+- **Optimized GPU Compatibility**: Supports **3090 / 4090** GPUs.
 
 ---
 
-## 🧪 Compatibility Notes
+## 🛠️ Common Issues & Quick Fixes
 
-- ✅ Full support for **RTX 5090+**
-- ✅ Works on **3090–4090** GPUs
+| Problem | Solution |
+|---------|----------|
+| **White screen on ComfyUI** | Open ComfyUI in Incognito or clear browser cache. |
+| **Container startup errors (infinite loop)** | Likely GPU mismatch. Switching to a different GPU (4090 recommended) usually fixes this. |
 
----
-
-## 📅 Updates
-
-```
-2025-08-05:
-- Initial public release of Flux RunPod template
-- Includes Mega Flux v1, Patreon unlock, FP8 defaults
-
-2025-08-XX:
-- [Add future updates here]
-```
+**Still stuck?** [Join the Discord](https://discord.com/channels/1354961457476927650/1354961801015726299) and I'll help personally.  
+I’ll patch the bug or update this section so no one else runs into it.
 
 ---
 
-## 🎬 Demo Video (Optional)
+## 📅 Changelog
 
-[![Watch Demo](https://your-thumbnail-link.png)](https://youtube.com/your-demo-url)
+**2025-08-06** – Initial public release 🎉
 
 ---
 
 ## 📄 License
 
-Distributed under the [MIT License](LICENSE)
+Distributed under the [MIT License](LICENSE).
 
 ---
 
-Happy creating!  
-— **MaxedOut**
+Happy generating!  
+
+**— MaxedOut**
