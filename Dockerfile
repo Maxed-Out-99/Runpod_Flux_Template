@@ -1,11 +1,15 @@
-# Base image
-FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
+# Base image with CUDA 12.2 and Ubuntu 22.04
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 LABEL maintainer="maxedout.ai" \
       version="flux-v1" \
       description="RunPod-ready container for ComfyUI + Patreon-auth + Flux"
 
 ENV PYTHONUNBUFFERED=1
+
+# Set build args for flexibility
+ARG PYTORCH_VERSION=2.5.1
+ARG TORCHVISION_VERSION=0.20.1
 
 # Install system dependencies
 RUN apt update && apt install -y \
@@ -45,8 +49,12 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI &
 # Install ComfyUI base requirements
 RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
 
-# Install latest PyTorch nightlies with CUDA 12.8 support (for 5090 compatibility)
-RUN pip install --no-cache-dir torch==2.7.1 torchvision==0.22.1+cu128 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+# Install PyTorch (with CUDA 12.1 support)
+RUN pip install --no-cache-dir \
+    torch==${PYTORCH_VERSION} \
+    torchvision==${TORCHVISION_VERSION} \
+    torchaudio==${PYTORCH_VERSION} \
+    --index-url https://download.pytorch.org/whl/cu121
 
 # Install insightface directly
 RUN pip install --no-cache-dir insightface==0.7.3
@@ -55,7 +63,7 @@ RUN pip install --no-cache-dir --use-pep517 facexlib
 RUN pip install --no-cache-dir \
     invisible-watermark \
     onnx onnxruntime \
-    opencv-python
+    opencv-python==4.12.0.88
 
 # Reinstall correct NumPy
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
