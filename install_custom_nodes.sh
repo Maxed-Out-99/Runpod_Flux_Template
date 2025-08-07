@@ -106,14 +106,8 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
         py-cpuinfo \
         jetson-stats \
         dill \
-        pycocotools \
-        tqdm \
-        orderly-set \
-        hydra-core \
-        termcolor \
-        tabulate \
-        iopath \
-        --no-build-isolation --no-deps git+https://github.com/facebookresearch/sam2
+        git+https://github.com/facebookresearch/sam2 \
+
 
     # Run special installation scripts for specific nodes
     echo "--- Running installer for Impact Pack ---"
@@ -133,3 +127,4 @@ else
 fi
 
 echo "✅ Custom node setup complete."
+echo ""
