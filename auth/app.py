@@ -33,7 +33,7 @@ def auth():
         f"https://www.patreon.com/oauth2/authorize?response_type=code"
         f"&client_id={CLIENT_ID}"
         f"&redirect_uri={PATREON_HELPER_CALLBACK}"
-        f"&scope=identity identity.memberships"
+        f"&scope=identity%20identity.memberships"
         f"&state={pod_specific_callback}"
     )
     return redirect(auth_url)
@@ -44,19 +44,31 @@ def callback():
     code = request.args.get("code")
     if not code:
         return "No code provided", 400
-
-    # Your existing check for a recent unlock is good
     if os.path.exists("/workspace/.flux_token"):
-        # ... (your timestamp checking logic) ...
-        return redirect("/success")
+        try:
+            with open("/workspace/.flux_token") as f:
+                ts = datetime.fromisoformat(f.read().strip())
+            if datetime.now(timezone.utc) - ts <= timedelta(hours=24):
+                print("✅ Already unlocked within last 24h")
+                return redirect("/success")
+        except Exception:
+            os.remove("/workspace/.flux_token")
 
     print("📞 Calling secure proxy to verify and download files...")
     try:
         # --- Download the main workflow ---
-        proxy_response_workflow = requests.post(SECURE_PROXY_URL, json={"code": code, "file_type": "workflow"})
+        proxy_response_workflow = requests.post(
+            SECURE_PROXY_URL,
+            json={"code": code, "file_type": "workflow"},
+            timeout=20
+        )
         if proxy_response_workflow.status_code != 200:
-            return "Failed to get workflow file from proxy.", 403
-        
+            return (
+                f"Proxy error {proxy_response_workflow.status_code}: "
+                f"{proxy_response_workflow.text}",
+                proxy_response_workflow.status_code
+            )
+
         workflow_path = "/workspace/ComfyUI/user/default/workflows/Mega Flux v1.json"
         os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
         with open(workflow_path, "wb") as f:
@@ -73,15 +85,22 @@ def callback():
         }
 
         for file_type, script_name in script_map.items():
-            proxy_response_script = requests.post(SECURE_PROXY_URL, json={"code": code, "file_type": file_type})
-            if proxy_response_script.status_code == 200:
-                with open(os.path.join(scripts_dir, script_name), "wb") as f:
-                    f.write(proxy_response_script.content)
-                print(f"✅ Helper script '{script_name}' downloaded.")
-            else:
-                 print(f"❌ Failed to download '{script_name}'.")
-                 # Decide if you want to fail the whole process if one script fails
-                 return f"Failed to download script {script_name} from proxy.", 500
+            proxy_response_script = requests.post(
+                SECURE_PROXY_URL,
+                json={"code": code, "file_type": file_type},
+                timeout=20
+            )
+            if proxy_response_script.status_code != 200:
+                return (
+                    f"Proxy error {proxy_response_script.status_code}: "
+                    f"{proxy_response_script.text}",
+                    proxy_response_script.status_code
+                )
+
+            with open(os.path.join(scripts_dir, script_name), "wb") as f:
+                f.write(proxy_response_script.content)
+            print(f"✅ Helper script '{script_name}' downloaded.")
+
 
         # If everything downloaded successfully, create the token
         with open("/workspace/.flux_token", "w") as f:
@@ -100,8 +119,6 @@ def serve_image(filename):
 
 @app.route('/download/<version>')
 def download_mega(version):
-    # This route which EXECUTES the scripts downloaded in /callback remains the same.
-    # The key difference is the scripts no longer contain any secrets.
     # (Your existing code for this route is fine)
     script_map = {
         "all": "download_all_mega_files.py",
@@ -148,7 +165,29 @@ def download_mega(version):
     # Redirect to the existing status-checking page
     return redirect(f"/downloading/{version}")
     
-# ... rest of your existing routes (downloading_page, download_status, etc.)
+@app.route('/download/status/<version>')
+def download_status(version):
+    log_file_path = "/workspace/logs/power_user_downloads.log"
+    done_file = f"/workspace/logs/download_{version}.done"
+    if os.path.exists(done_file):
+        return {"status": "complete"}
+    if not os.path.exists(log_file_path):
+        return {"status": "starting"}
+    try:
+        with open(log_file_path, "r", encoding='utf-8') as f:
+            lines = f.readlines()
+        overall = next((l for l in reversed(lines) if l.startswith("OVERALL::")), "Waiting for overall progress...")
+        detail = next((l for l in reversed(lines) if l.startswith("   DETAIL::")), "")
+        info = next((l for l in reversed(lines) if l.startswith("INFO::")), "")
+        return {"status": "downloading", "overall": overall.strip(), "detail": detail.strip(), "info": info.strip()}
+    except Exception:
+        return {"status": "error"}
+
+@app.route("/downloading/<version>")
+def downloading_page(version):
+    if version not in ["all", "small", "all_fp8"]:
+        return "Invalid version specified", 404
+    return send_file("/workspace/auth/downloading.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=7860)
