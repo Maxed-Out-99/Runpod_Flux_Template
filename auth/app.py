@@ -9,9 +9,18 @@ from flask import Flask, redirect, request, send_file, send_from_directory
 import jwt
 from jwt import InvalidTokenError
 
+class EntitlementError(RuntimeError):
+    pass
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 app = Flask(__name__)
+
+@app.after_request
+def no_cache(resp):
+    if resp.mimetype == "text/html":
+        resp.headers["Cache-Control"] = "no-store, max-age=0"
+    return resp
 
 # ─── Safe config (no secrets on pod) ────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "https://auth.maxedout.ai")
@@ -39,6 +48,15 @@ def download_via_gateway(bearer_token: str, rel: str, dest_path: str):
     print(f"→ fetching {url} -> {dest_path}")
     r = requests.get(url, headers={"Authorization": f"Bearer {bearer_token}"}, stream=True, timeout=120)
     print(f"  status = {r.status_code}")
+
+    # 👇 Treat these as entitlement failures
+    if r.status_code in (401, 402, 403):
+        try:
+            print("  body:", r.text[:300])
+        except Exception:
+            pass
+        raise EntitlementError(f"entitlement denied: {r.status_code}")
+
     if r.status_code != 200:
         try:
             print("  body:", r.text[:300])
@@ -80,6 +98,11 @@ def auth():
     cb = runpod_callback_url()
     return redirect(f"{GATEWAY}/start?pod_callback={cb}")
 
+# add this near your other static routes
+@app.route("/fail")
+def fail():
+    return send_file("/workspace/auth/fail.html")
+
 @app.route("/callback")
 @app.route("/callback/")
 def callback():
@@ -105,7 +128,8 @@ def callback():
 
     token = request.args.get("token")
     if not token:
-        return "Missing token", 400
+        return redirect("/fail")
+
 
     if not PUBLIC_JWT_KEY:
         return "Server misconfigured: missing PUBLIC_JWT_KEY_PEM", 500
@@ -117,7 +141,7 @@ def callback():
         print(f"🔐 JWT OK for sub={claims.get('sub')} pod={claims.get('pod_id')} exp={claims.get('exp')}")
     except InvalidTokenError as e:
         print("JWT error:", e)
-        return "Invalid token", 403
+        return redirect("/fail")
 
     # Pull gated assets (workflow + helper scripts) via the gateway
     try:
@@ -145,6 +169,11 @@ def callback():
             f.write(datetime.now(timezone.utc).isoformat())
 
         return redirect("/success")
+
+    except EntitlementError as e:
+        print(f"❌ Entitlement failure: {e}")
+        return redirect("/fail")
+
     except Exception as e:
         print(f"❌ Download via gateway failed: {e}")
         return "Failed to fetch gated files", 500
