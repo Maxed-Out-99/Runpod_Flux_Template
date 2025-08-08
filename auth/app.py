@@ -35,20 +35,25 @@ def runpod_callback_url():
     return f"https://{pod_id}-{port}.proxy.runpod.net/callback"
 
 def download_via_gateway(bearer_token: str, rel: str, dest_path: str):
-    """
-    Download a gated file through the gateway using a short-lived JWT.
-    rel is either 'workflow' or 'script?name=...'
-    """
     url = f"{GATEWAY}/deliver/{rel}"
+    print(f"→ fetching {url} -> {dest_path}")
     r = requests.get(url, headers={"Authorization": f"Bearer {bearer_token}"}, stream=True, timeout=120)
+    print(f"  status = {r.status_code}")
     if r.status_code != 200:
+        try:
+            print("  body:", r.text[:300])
+        except Exception:
+            pass
         raise RuntimeError(f"fetch failed: {url} -> {r.status_code}")
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    wrote = 0
     with open(dest_path, "wb") as f:
         for chunk in r.iter_content(1 << 20):
             if chunk:
                 f.write(chunk)
+                wrote += len(chunk)
+    print(f"  wrote {wrote} bytes to {dest_path}")
 
 # ─── Static pages & 404 ────────────────────────────────────────────────────
 @app.errorhandler(404)
