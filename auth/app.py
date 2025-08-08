@@ -15,7 +15,9 @@ app = Flask(__name__)
 
 # ─── Safe config (no secrets on pod) ────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "https://auth.maxedout.ai")
-PUBLIC_JWT_KEY = os.environ.get("PUBLIC_JWT_KEY_PEM", "").encode()
+
+with open("/workspace/public.pem", "rb") as f:
+    PUBLIC_JWT_KEY = f.read()
 
 # ─── Utilities ──────────────────────────────────────────────────────────────
 def get_env_var(key, required=True, default=None):

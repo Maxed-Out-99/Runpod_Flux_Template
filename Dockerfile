@@ -74,6 +74,9 @@ COPY --chmod=755 workflows/ /workspace/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
 COPY --chmod=755 custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
 
+# Copy the public key into the container
+COPY public.pem /workspace/public.pem
+
 # Copy scripts nodes
 COPY --chmod=755 scripts/ /workspace/scripts/
 
