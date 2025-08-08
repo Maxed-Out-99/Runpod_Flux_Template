@@ -1,187 +1,217 @@
-# app.py - NEW VERSION FOR RUNPOD
+# ─── Imports ────────────────────────────────────────────────────────────────
 import os
+import sys
+import subprocess
+from datetime import datetime, timedelta, timezone
+
 import requests
 from flask import Flask, redirect, request, send_file, send_from_directory
-from datetime import datetime, timezone, timedelta
-import sys
-sys.stdout.reconfigure(encoding='utf-8')
-import subprocess
+import jwt
+from jwt import InvalidTokenError
+
+sys.stdout.reconfigure(encoding="utf-8")
 
 app = Flask(__name__)
 
-# --- Configuration ---
-# Paste the Vercel URL you copied in Part 2
-SECURE_PROXY_URL = "https://patreon-proxy.vercel.app/api/get-file" 
-# This should be the same public callback helper you used before
-PATREON_HELPER_CALLBACK = os.environ.get("PATREON_HELPER_CALLBACK", "https://maxed-out-99.github.io/patreon-auth/callback.html")
-CLIENT_ID = os.environ.get("PATREON_CLIENT_ID") # Client ID is public, so it's fine here
+# ─── Safe config (no secrets on pod) ────────────────────────────────────────
+GATEWAY = os.environ.get("GATEWAY_URL", "https://auth.maxedout.ai")
+PUBLIC_JWT_KEY = os.environ.get("PUBLIC_JWT_KEY_PEM", "").encode()
 
-@app.route("/")
-def index():
-    return send_file("/workspace/auth/index.html")
+# ─── Utilities ──────────────────────────────────────────────────────────────
+def get_env_var(key, required=True, default=None):
+    val = os.environ.get(key)
+    if val is None:
+        if required:
+            raise RuntimeError(f"❌ Missing required environment variable: {key}")
+        return default
+    return val.strip()
+
+def runpod_callback_url():
+    """Build the stable public callback URL for this pod via RunPod proxy."""
+    pod_id = get_env_var("RUNPOD_POD_ID")
+    port = get_env_var("RUNPOD_PORT_7860_TCP_PORT", required=False, default="7860")
+    return f"https://{pod_id}-{port}.proxy.runpod.net/callback"
+
+def download_via_gateway(bearer_token: str, rel: str, dest_path: str):
+    """
+    Download a gated file through the gateway using a short-lived JWT.
+    rel is either 'workflow' or 'script?name=...'
+    """
+    url = f"{GATEWAY}/deliver/{rel}"
+    r = requests.get(url, headers={"Authorization": f"Bearer {bearer_token}"}, stream=True, timeout=120)
+    if r.status_code != 200:
+        raise RuntimeError(f"fetch failed: {url} -> {r.status_code}")
+
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, "wb") as f:
+        for chunk in r.iter_content(1 << 20):
+            if chunk:
+                f.write(chunk)
+
+# ─── Static pages & 404 ────────────────────────────────────────────────────
+@app.errorhandler(404)
+def not_found(e):
+    return redirect("/")
 
 @app.route("/success")
 def success():
+    print("✅ Success page reached.")
     return send_file("/workspace/auth/success.html")
 
+@app.route("/")
+def index():
+    print("✅ Index page served.")
+    return send_file("/workspace/auth/index.html")
+
+# ─── Auth flow (delegated to gateway) ──────────────────────────────────────
 @app.route("/auth")
 def auth():
-    pod_id = os.environ.get("RUNPOD_POD_ID")
-    port = os.environ.get("RUNPOD_PORT_7860_TCP_PORT", "7860")
-    pod_specific_callback = f"https://{pod_id}-{port}.proxy.runpod.net/callback"
-    auth_url = (
-        f"https://www.patreon.com/oauth2/authorize?response_type=code"
-        f"&client_id={CLIENT_ID}"
-        f"&redirect_uri={PATREON_HELPER_CALLBACK}"
-        f"&scope=identity%20identity.memberships"
-        f"&state={pod_specific_callback}"
-    )
-    return redirect(auth_url)
+    """
+    Start OAuth by handing off to the gateway.
+    The gateway owns Patreon OAuth + entitlement checks.
+    """
+    cb = runpod_callback_url()
+    return redirect(f"{GATEWAY}/start?pod_callback={cb}")
 
 @app.route("/callback")
 @app.route("/callback/")
 def callback():
-    code = request.args.get("code")
-    if not code:
-        return "No code provided", 400
-    if os.path.exists("/workspace/.flux_token"):
+    """
+    Gateway redirects here with ?token=<JWT>.
+    We verify the JWT with our public key (RS256), then pull gated files
+    through the gateway using that same JWT (one-time use).
+    """
+    # Reuse success within 24h if present
+    token_file = "/workspace/.flux_token"
+    if os.path.exists(token_file):
         try:
-            with open("/workspace/.flux_token") as f:
-                ts = datetime.fromisoformat(f.read().strip())
+            ts = datetime.fromisoformat(open(token_file).read().strip())
             if datetime.now(timezone.utc) - ts <= timedelta(hours=24):
                 print("✅ Already unlocked within last 24h")
                 return redirect("/success")
-        except Exception:
-            os.remove("/workspace/.flux_token")
+        except Exception as e:
+            print(f"⚠️ Couldn't parse timestamp: {e}")
+            try:
+                os.remove(token_file)
+            except Exception:
+                pass
 
-    print("📞 Calling secure proxy to verify and download files...")
+    token = request.args.get("token")
+    if not token:
+        return "Missing token", 400
+
+    if not PUBLIC_JWT_KEY:
+        return "Server misconfigured: missing PUBLIC_JWT_KEY_PEM", 500
+
+    # Verify JWT issued by gateway
     try:
-        # --- Download the main workflow ---
-        proxy_response_workflow = requests.post(
-            SECURE_PROXY_URL,
-            json={"code": code, "file_type": "workflow"},
-            timeout=20
+        claims = jwt.decode(token, PUBLIC_JWT_KEY, algorithms=["RS256"], audience="runpod")
+        # Optional: sanity logs
+        print(f"🔐 JWT OK for sub={claims.get('sub')} pod={claims.get('pod_id')} exp={claims.get('exp')}")
+    except InvalidTokenError as e:
+        print("JWT error:", e)
+        return "Invalid token", 403
+
+    # Pull gated assets (workflow + helper scripts) via the gateway
+    try:
+        # Main workflow
+        download_via_gateway(
+            token,
+            "workflow",
+            "/workspace/ComfyUI/user/default/workflows/Mega Flux v1.json",
         )
-        if proxy_response_workflow.status_code != 200:
-            return (
-                f"Proxy error {proxy_response_workflow.status_code}: "
-                f"{proxy_response_workflow.text}",
-                proxy_response_workflow.status_code
+
+        # Helper scripts
+        scripts = [
+            "download_all_mega_files.py",
+            "download_small_mega_files.py",
+            "download_all_mega_files_fp8.py",
+        ]
+        for name in scripts:
+            download_via_gateway(
+                token,
+                f"script?name={name}",
+                f"/workspace/scripts/{name}",
             )
 
-        workflow_path = "/workspace/ComfyUI/user/default/workflows/Mega Flux v1.json"
-        os.makedirs(os.path.dirname(workflow_path), exist_ok=True)
-        with open(workflow_path, "wb") as f:
-            f.write(proxy_response_workflow.content)
-        print("✅ Main workflow downloaded.")
-
-        # --- Download the helper scripts ---
-        scripts_dir = "/workspace/scripts"
-        os.makedirs(scripts_dir, exist_ok=True)
-        script_map = {
-            "script_download_all": "download_all_mega_files.py",
-            "script_download_small": "download_small_mega_files.py",
-            "script_download_fp8": "download_all_mega_files_fp8.py"
-        }
-
-        for file_type, script_name in script_map.items():
-            proxy_response_script = requests.post(
-                SECURE_PROXY_URL,
-                json={"code": code, "file_type": file_type},
-                timeout=20
-            )
-            if proxy_response_script.status_code != 200:
-                return (
-                    f"Proxy error {proxy_response_script.status_code}: "
-                    f"{proxy_response_script.text}",
-                    proxy_response_script.status_code
-                )
-
-            with open(os.path.join(scripts_dir, script_name), "wb") as f:
-                f.write(proxy_response_script.content)
-            print(f"✅ Helper script '{script_name}' downloaded.")
-
-
-        # If everything downloaded successfully, create the token
-        with open("/workspace/.flux_token", "w") as f:
+        with open(token_file, "w") as f:
             f.write(datetime.now(timezone.utc).isoformat())
 
         return redirect("/success")
+    except Exception as e:
+        print(f"❌ Download via gateway failed: {e}")
+        return "Failed to fetch gated files", 500
 
-    except requests.exceptions.RequestException as e:
-        return f"Error connecting to the secure proxy: {e}", 500
+# ─── Download status & triggers (unchanged behavior) ───────────────────────
+@app.route("/download/status/<version>")
+def download_status(version):
+    log_file_path = "/workspace/logs/power_user_downloads.log"
+    done_file = f"/workspace/logs/download_{version}.done"
 
-# Keep your other routes for serving images, status pages, etc.
-# They do not need to be changed.
-@app.route('/images/<path:filename>')
-def serve_image(filename):
-    return send_from_directory('/workspace/auth/images', filename)
+    if os.path.exists(done_file):
+        return {"status": "complete"}
 
-@app.route('/download/<version>')
+    if not os.path.exists(log_file_path):
+        return {"status": "starting"}
+
+    try:
+        with open(log_file_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        overall_line = next((line for line in reversed(lines) if line.startswith("OVERALL::")), "Waiting for overall progress...")
+        detail_line = next((line for line in reversed(lines) if line.startswith("   DETAIL::")), "")
+        info_line = next((line for line in reversed(lines) if line.startswith("INFO::")), "")
+
+        return {
+            "status": "downloading",
+            "overall": overall_line.strip(),
+            "detail": detail_line.strip(),
+            "info": info_line.strip(),
+        }
+    except Exception as e:
+        print(f"Error reading log status: {e}")
+        return {"status": "error"}
+
+@app.route("/download/<version>")
 def download_mega(version):
-    # (Your existing code for this route is fine)
     script_map = {
         "all": "download_all_mega_files.py",
         "small": "download_small_mega_files.py",
-        "all_fp8": "download_all_mega_files_fp8.py"
+        "all_fp8": "download_all_mega_files_fp8.py",
     }
-
     if version not in script_map:
         return "Invalid version specified", 404
 
     script_name = script_map[version]
     script_path = os.path.join("/workspace/scripts", script_name)
-    
+
     if not os.path.exists(script_path):
         return f"Script {script_name} not found.", 500
 
     log_file_path = "/workspace/logs/power_user_downloads.log"
     done_file = f"/workspace/logs/download_{version}.done"
-    
-    # Ensure the /workspace/logs directory exists before trying to write to it.
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
-    # Clean up old files before starting a new download
+    # Clean old files
     if os.path.exists(done_file):
         os.remove(done_file)
     if os.path.exists(log_file_path):
         os.remove(log_file_path)
 
     try:
-        # Open the log file in append mode and start the process
         with open(log_file_path, "a") as log_file:
             print(f"🚀 Starting download for '{version}'. Log: {log_file_path}")
             subprocess.Popen(
-                ["python3", "-u", script_path], # Added -u for unbuffered output
-                stdout=log_file, 
+                ["python3", "-u", script_path],
+                stdout=log_file,
                 stderr=subprocess.STDOUT,
-                cwd="/workspace/scripts"
+                cwd="/workspace/scripts",
             )
     except Exception as e:
-        print(f"🔥🔥🔥 CRITICAL ERROR trying to start subprocess for {script_name} 🔥🔥🔥")
-        print(f"Exception: {e}")
+        print(f"🔥 CRITICAL ERROR starting subprocess for {script_name}: {e}")
         return "An unexpected error occurred while trying to start the download.", 500
 
-    # Redirect to the existing status-checking page
     return redirect(f"/downloading/{version}")
-    
-@app.route('/download/status/<version>')
-def download_status(version):
-    log_file_path = "/workspace/logs/power_user_downloads.log"
-    done_file = f"/workspace/logs/download_{version}.done"
-    if os.path.exists(done_file):
-        return {"status": "complete"}
-    if not os.path.exists(log_file_path):
-        return {"status": "starting"}
-    try:
-        with open(log_file_path, "r", encoding='utf-8') as f:
-            lines = f.readlines()
-        overall = next((l for l in reversed(lines) if l.startswith("OVERALL::")), "Waiting for overall progress...")
-        detail = next((l for l in reversed(lines) if l.startswith("   DETAIL::")), "")
-        info = next((l for l in reversed(lines) if l.startswith("INFO::")), "")
-        return {"status": "downloading", "overall": overall.strip(), "detail": detail.strip(), "info": info.strip()}
-    except Exception:
-        return {"status": "error"}
 
 @app.route("/downloading/<version>")
 def downloading_page(version):
@@ -189,5 +219,11 @@ def downloading_page(version):
         return "Invalid version specified", 404
     return send_file("/workspace/auth/downloading.html")
 
+# Serve images
+@app.route("/images/<path:filename>")
+def serve_image(filename):
+    return send_from_directory("/workspace/auth/images", filename)
+
+# ─── Main ───────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=7860)
