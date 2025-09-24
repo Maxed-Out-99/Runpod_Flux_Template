@@ -25,7 +25,7 @@ def no_cache(resp):
 # ─── Safe config (no secrets on pod) ────────────────────────────────────────
 GATEWAY = os.environ.get("GATEWAY_URL", "https://auth.maxedout.ai")
 
-with open("/workspace/public.pem", "rb") as f:
+with open("/workspace/auth/public.pem", "rb") as f:
     PUBLIC_JWT_KEY = f.read()
 
 # ─── Utilities ──────────────────────────────────────────────────────────────

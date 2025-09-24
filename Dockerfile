@@ -74,9 +74,6 @@ COPY --chmod=755 workflows/ /opt/ComfyUI/user/default/workflows/
 COPY --chmod=644 comfy.settings.json /opt/ComfyUI/user/default/comfy.settings.json
 COPY --chmod=755 custom_nodes/ComfyUI-MaxedOut-Runpod /opt/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
 
-# Copy the public key into the container
-COPY public.pem /opt/public.pem
-
 # Copy scripts nodes
 COPY --chmod=755 scripts/ /opt/scripts/
 
@@ -88,6 +85,8 @@ COPY --chmod=644 auth/index.html /opt/auth/index.html
 COPY --chmod=644 auth/downloading.html /opt/auth/downloading.html
 COPY --chmod=644 auth/requirements.txt /opt/auth/requirements.txt
 COPY --chmod=644 auth/images/mega_exclusives.jpg /opt/auth/images/mega_exclusives.jpg
+COPY auth/public.pem /opt/auth/public.pem
+
 
 
 RUN pip install --no-cache-dir -r /opt/auth/requirements.txt
