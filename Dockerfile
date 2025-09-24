@@ -1,4 +1,4 @@
-# Base image with CUDA 12.2 and Ubuntu 22.04
+# Base image with CUDA 12.1 and Ubuntu 22.04
 FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 LABEL maintainer="maxedout.ai" \
@@ -104,7 +104,7 @@ EXPOSE 7860
 EXPOSE 8888
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
-  curl -f http://localhost:8188/ || curl -f http://localhost:7860/ || curl -f http://localhost:8888/ || exit 1
+  curl -fsS http://localhost:8188/queue/status || exit 1
 
 # Entrypoint
 CMD ["/workspace/start.sh"]
