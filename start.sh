@@ -1,5 +1,43 @@
 #!/bin/bash
 set -e
+
+# --- Minimal PV-safe bootstrap (no behavior change to your flow) ---
+# Make sure the persistent volume mount exists
+mkdir -p /workspace
+
+# Seed ComfyUI onto the PV on first run (includes .git, configs, etc.)
+if [[ ! -d /workspace/ComfyUI ]]; then
+  echo "[init] Seeding ComfyUI into /workspace..."
+  cp -a /opt/ComfyUI /workspace/ComfyUI
+fi
+
+# Seed your scripts and auth app to the PV (first run only)
+if [[ ! -d /workspace/scripts ]]; then
+  cp -a /opt/scripts /workspace/scripts
+fi
+
+if [[ ! -d /workspace/auth ]]; then
+  cp -a /opt/auth /workspace/auth
+fi
+
+# Ensure runtime dirs exist (ComfyUI will use these)
+mkdir -p /workspace/{input,output,temp,user/default/workflows}
+
+# Convenience: keep /ComfyUI path available for anything that expects it
+rm -rf /ComfyUI 2>/dev/null || true
+ln -s /workspace/ComfyUI /ComfyUI
+# --- end minimal bootstrap ---
+
+# 📦 Install custom nodes once
+NODES_LOCK="/workspace/.custom_nodes_installed"
+if [ ! -f "$NODES_LOCK" ]; then
+    echo "⬇️ Installing custom nodes..."
+    bash /opt/install_custom_nodes.sh
+    touch "$NODES_LOCK"
+else
+    echo "✅ Custom nodes already installed. Skipping."
+fi
+
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
 echo "🔥 STARTING FLUX V1 @ $(date) — Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"

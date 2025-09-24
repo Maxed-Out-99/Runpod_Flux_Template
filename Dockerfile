@@ -42,12 +42,12 @@ RUN pip3 install jupyterlab
 WORKDIR /workspace
 
 # Clone ComfyUI
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI && \
-    cd /workspace/ComfyUI && \
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI && \
+    cd /opt/ComfyUI && \
     git checkout aebac221937b511d46fe601656acdc753435b849
 
 # Install ComfyUI base requirements
-RUN pip install --no-cache-dir --retries=10 -r /workspace/ComfyUI/requirements.txt
+RUN pip install --no-cache-dir --retries=10 -r /opt/ComfyUI/requirements.txt
 
 # Install PyTorch (with CUDA 12.1 support)
 RUN pip install --no-cache-dir \
@@ -69,32 +69,31 @@ RUN pip install --no-cache-dir \
 RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
 
 # Copy scripts and workflows
-COPY --chmod=755 start.sh /workspace/start.sh
-COPY --chmod=755 workflows/ /workspace/ComfyUI/user/default/workflows/
-COPY --chmod=644 comfy.settings.json /workspace/ComfyUI/user/default/comfy.settings.json
-COPY --chmod=755 custom_nodes/ComfyUI-MaxedOut-Runpod /workspace/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
+COPY --chmod=755 start.sh /opt/start.sh
+COPY --chmod=755 workflows/ /opt/ComfyUI/user/default/workflows/
+COPY --chmod=644 comfy.settings.json /opt/ComfyUI/user/default/comfy.settings.json
+COPY --chmod=755 custom_nodes/ComfyUI-MaxedOut-Runpod /opt/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
 
 # Copy the public key into the container
-COPY public.pem /workspace/public.pem
+COPY public.pem /opt/public.pem
 
 # Copy scripts nodes
-COPY --chmod=755 scripts/ /workspace/scripts/
+COPY --chmod=755 scripts/ /opt/scripts/
 
 # Copy Patreon auth files
-COPY --chmod=755 auth/app.py /workspace/auth/app.py
-COPY --chmod=644 auth/success.html /workspace/auth/success.html
-COPY --chmod=644 auth/fail.html /workspace/auth/fail.html
-COPY --chmod=644 auth/index.html /workspace/auth/index.html
-COPY --chmod=644 auth/downloading.html /workspace/auth/downloading.html
-COPY --chmod=644 auth/requirements.txt /workspace/auth/requirements.txt
-COPY --chmod=644 auth/images/mega_exclusives.jpg /workspace/auth/images/mega_exclusives.jpg
+COPY --chmod=755 auth/app.py /opt/auth/app.py
+COPY --chmod=644 auth/success.html /opt/auth/success.html
+COPY --chmod=644 auth/fail.html /opt/auth/fail.html
+COPY --chmod=644 auth/index.html /opt/auth/index.html
+COPY --chmod=644 auth/downloading.html /opt/auth/downloading.html
+COPY --chmod=644 auth/requirements.txt /opt/auth/requirements.txt
+COPY --chmod=644 auth/images/mega_exclusives.jpg /opt/auth/images/mega_exclusives.jpg
 
 
-RUN pip install --no-cache-dir -r /workspace/auth/requirements.txt
+RUN pip install --no-cache-dir -r /opt/auth/requirements.txt
 
 # Copy the custom node installer script and run it so dependencies are baked in
 COPY --chmod=755 install_custom_nodes.sh /opt/install_custom_nodes.sh
-RUN /opt/install_custom_nodes.sh
 
 # Expose ComfyUI default port
 EXPOSE 8188
@@ -107,4 +106,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
   curl -fsS http://localhost:8188/queue/status || exit 1
 
 # Entrypoint
-CMD ["/workspace/start.sh"]
+CMD ["/opt/start.sh"]
