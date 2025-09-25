@@ -47,84 +47,88 @@ clone_repo "https://github.com/crystian/ComfyUI-Crystools.git" "${CUSTOM_NODES_D
 
 # Install Python dependencies only if they haven't been installed before
 if [ ! -f "$INSTALL_LOCK_FILE" ]; then
-    echo "🐍 First time setup: Installing all custom node dependencies..."
+  # Add system packages needed for pycairo/rlpycairo/svglib
+  if command -v apt >/dev/null 2>&1; then
+    echo "📦 Installing system libs for Cairo..."
+    export DEBIAN_FRONTEND=noninteractive
+    apt update && apt install -y \
+      pkg-config \
+      libcairo2-dev \
+      libpango1.0-dev \
+      librsvg2-dev \
+      python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+  fi
 
-    # Install all packages in a single, controlled command.
-    # Note: torch, torchvision, and opencv-python are intentionally excluded
-    # to resolve conflicts and enforce the versions from the Dockerfile.
-    pip install --no-cache-dir \
-        GitPython \
-        PyGithub \
-        matrix-client==0.4.0 \
-        transformers \
-        huggingface-hub'>'0.20 \
-        typer \
-        rich \
-        typing-extensions \
-        toml \
-        uv \
-        chardet \
-        pillow'>='10.3.0 \
-        scipy'>='1.11.4 \
-        color-matcher \
-        matplotlib \
-        mss \
-        segment-anything \
-        scikit-image \
-        piexif \
-        numpy==1.26.4 \
-        ultralytics \
-        importlib_metadata \
-        filelock \
-        einops \
-        pyyaml \
-        python-dateutil \
-        mediapipe \
-        svglib \
-        fvcore \
-        yapf \
-        omegaconf \
-        ftfy \
-        addict \
-        yacs \
-        trimesh[easy] \
-        albumentations'>='1.4.16 \
-        scikit-learn \
-        timm \
-        peft \
-        accelerate'>='0.26.0 \
-        insightface==0.7.3 \
-        onnx'>='1.14.0 \
-        gguf'>='0.13.0 \
-        sentencepiece \
-        protobuf \
-        cython \
-        facexlib \
-        onnxruntime-gpu \
-        deepdiff \
-        pynvml \
-        py-cpuinfo \
-        jetson-stats \
-        dill \
-        git+https://github.com/facebookresearch/sam2 \
+  echo "🐍 First time setup: Installing all custom node dependencies..."
 
+  pip install --no-cache-dir \
+    GitPython \
+    PyGithub \
+    matrix-client==0.4.0 \
+    transformers \
+    huggingface-hub'>'0.20 \
+    typer \
+    rich \
+    typing-extensions \
+    toml \
+    uv \
+    chardet \
+    pillow'>='10.3.0 \
+    scipy'>='1.11.4 \
+    color-matcher \
+    matplotlib \
+    mss \
+    segment-anything \
+    scikit-image \
+    piexif \
+    numpy==1.26.4 \
+    ultralytics \
+    importlib_metadata \
+    filelock \
+    einops \
+    pyyaml \
+    python-dateutil \
+    mediapipe \
+    svglib \
+    fvcore \
+    yapf \
+    omegaconf \
+    ftfy \
+    addict \
+    yacs \
+    trimesh[easy] \
+    albumentations'>='1.4.16 \
+    scikit-learn \
+    timm \
+    peft \
+    accelerate'>='0.26.0 \
+    insightface==0.7.3 \
+    onnx'>='1.14.0 \
+    gguf'>='0.13.0 \
+    sentencepiece \
+    protobuf \
+    cython \
+    facexlib \
+    onnxruntime-gpu \
+    deepdiff \
+    pynvml \
+    py-cpuinfo \
+    jetson-stats \
+    dill \
+    git+https://github.com/facebookresearch/sam2
 
-    # Run special installation scripts for specific nodes
-    echo "--- Running installer for Impact Pack ---"
-    python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py"
+  echo "--- Running installer for Impact Pack ---"
+  python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py"
 
-    echo "--- Running installer for Reactor ---"
-    python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py"
+  echo "--- Running installer for Reactor ---"
+  python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py"
 
-    # Verify the final torch version
-    python3 -c "import torch; print('Final torch version:', torch.__version__)"
-    
-    # Create the lock file to prevent this block from running again
-    touch "$INSTALL_LOCK_FILE"
-    echo "✅ Python dependencies installed."
+  python3 -c "import torch; print('Final torch version:', torch.__version__)"
+  touch "$INSTALL_LOCK_FILE"
+  echo "✅ Python dependencies installed."
 else
-    echo "✅ Python dependencies already installed, skipping."
+  echo "✅ Python dependencies already installed, skipping."
 fi
 
 echo "✅ Custom node setup complete."
-echo ""
