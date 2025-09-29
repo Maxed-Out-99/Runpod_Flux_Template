@@ -29,14 +29,14 @@ ln -s /workspace/ComfyUI /ComfyUI
 # --- end minimal bootstrap ---
 
 # 📦 Install custom nodes once
-NODES_LOCK="/workspace/.custom_nodes_installed"
-if [ ! -f "$NODES_LOCK" ]; then
-    echo "⬇️ Installing custom nodes..."
-    bash /opt/install_custom_nodes.sh
-    touch "$NODES_LOCK"
-else
-    echo "✅ Custom nodes already installed. Skipping."
-fi
+# NODES_LOCK="/workspace/.custom_nodes_installed"
+# if [ ! -f "$NODES_LOCK" ]; then
+#     echo "⬇️ Installing custom nodes..."
+#     bash /opt/install_custom_nodes.sh
+#     touch "$NODES_LOCK"
+# else
+#     echo "✅ Custom nodes already installed. Skipping."
+# fi
 
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
