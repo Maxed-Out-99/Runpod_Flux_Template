@@ -66,8 +66,40 @@ sleep 2
 
 # ─── CORRECTED JUPYTER STARTUP ───────────────────────────────────────────
 echo "🚀 Starting JupyterLab..."
-# Start Jupyter in the background
-jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > /workspace/jupyterlab.log 2>&1 &
+
+# Respect RunPod's proxy path when it is provided so the UI doesn't 404 when
+# opened through the control panel button. Default to the root when the
+# environment variable is not set.
+JUPYTER_BASE_URL="${RUNPOD_JUPYTER_PROXY_PATH:-/}"
+if [[ -n "$JUPYTER_BASE_URL" && "${JUPYTER_BASE_URL:0:1}" != "/" ]]; then
+  JUPYTER_BASE_URL="/${JUPYTER_BASE_URL}"
+fi
+
+# Provide sane defaults for other frequently customised settings while still
+# allowing overrides through environment variables.
+JUPYTER_DEFAULT_URL="${RUNPOD_JUPYTER_DEFAULT_URL:-/lab}"
+if [[ -n "$JUPYTER_DEFAULT_URL" && "${JUPYTER_DEFAULT_URL:0:1}" != "/" ]]; then
+  JUPYTER_DEFAULT_URL="/${JUPYTER_DEFAULT_URL}"
+fi
+
+JUPYTER_ROOT_DIR="${RUNPOD_JUPYTER_ROOT:-/workspace}"
+
+echo "   ↳ Base URL: ${JUPYTER_BASE_URL}"
+echo "   ↳ Default URL: ${JUPYTER_DEFAULT_URL}"
+echo "   ↳ Root dir: ${JUPYTER_ROOT_DIR}"
+
+# Start Jupyter in the background with explicit base URL configuration.
+jupyter lab \
+  --ip=0.0.0.0 \
+  --port=8888 \
+  --no-browser \
+  --allow-root \
+  --ServerApp.base_url="${JUPYTER_BASE_URL}" \
+  --ServerApp.default_url="${JUPYTER_DEFAULT_URL}" \
+  --ServerApp.root_dir="${JUPYTER_ROOT_DIR}" \
+  --ServerApp.allow_remote_access=True \
+  --ServerApp.trust_xheaders=True \
+  > /workspace/jupyterlab.log 2>&1 &
 JUPYTER_PID=$!
 
 # Wait for the Jupyter server to be fully running
@@ -76,12 +108,15 @@ while ! jupyter server list > /dev/null 2>&1; do
   sleep 1
 done
 
-# Get the token directly from the server command (using the simpler, correct jq filter)
-TOKEN=$(jupyter server list --json | jq -r '.token')
+# Get the token directly from the server command (robust against either single
+# objects or JSON lists depending on the Jupyter version)
+TOKEN=$(jupyter server list --json | jq -r '.[0].token // .token')
+SERVER_URL=$(jupyter server list --json | jq -r '.[0].url // .url')
 
 # Print the clean token for easy copying
 echo ""
 echo "JUPYTERLAB TOKEN: ${TOKEN}"
+echo "JUPYTERLAB URL: ${SERVER_URL}${JUPYTER_DEFAULT_URL#/}" 
 echo "(You may need this to log in to JupyterLab)"
 echo ""
 # ───────────────────────────────────────────────────────────────────────────
