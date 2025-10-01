@@ -88,11 +88,13 @@ jupyter lab \
   --port=8888 \
   --no-browser \
   --allow-root \
-  --ServerApp.base_url="${JUPYTER_BASE_URL}" \
-  --ServerApp.default_url="${JUPYTER_DEFAULT_URL}" \
-  --ServerApp.root_dir="${JUPYTER_ROOT_DIR}" \
+  --ServerApp.base_url="/" \
+  --ServerApp.default_url="/lab" \
+  --ServerApp.root_dir="/workspace" \
   --ServerApp.allow_remote_access=True \
   --ServerApp.trust_xheaders=True \
+  --ServerApp.allow_origin="*" \
+  --ServerApp.disable_check_xsrf=True \
   > /workspace/jupyterlab.log 2>&1 &
 JUPYTER_PID=$!
 
@@ -110,7 +112,7 @@ echo "JUPYTERLAB TOKEN: ${TOKEN}"
 echo "JUPYTERLAB URL: ${SERVER_URL}${JUPYTER_DEFAULT_URL#/}"
 echo "(You may need this to log in to JupyterLab)"
 echo ""
-# ───────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────
 
 # Wait for ComfyUI to be ready
 CHECK_INTERVAL=5
