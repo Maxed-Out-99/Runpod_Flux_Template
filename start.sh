@@ -64,19 +64,14 @@ python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/com
 COMFYUI_PID=$!
 sleep 2
 
-# ─── CORRECTED JUPYTER STARTUP ───────────────────────────────────────────
+# ─── JUPYTER STARTUP ───────────────────────────────────────────
 echo "🚀 Starting JupyterLab..."
 
-# Respect RunPod's proxy path when it is provided so the UI doesn't 404 when
-# opened through the control panel button. Default to the root when the
-# environment variable is not set.
 JUPYTER_BASE_URL="${RUNPOD_JUPYTER_PROXY_PATH:-/}"
 if [[ -n "$JUPYTER_BASE_URL" && "${JUPYTER_BASE_URL:0:1}" != "/" ]]; then
   JUPYTER_BASE_URL="/${JUPYTER_BASE_URL}"
 fi
 
-# Provide sane defaults for other frequently customised settings while still
-# allowing overrides through environment variables.
 JUPYTER_DEFAULT_URL="${RUNPOD_JUPYTER_DEFAULT_URL:-/lab}"
 if [[ -n "$JUPYTER_DEFAULT_URL" && "${JUPYTER_DEFAULT_URL:0:1}" != "/" ]]; then
   JUPYTER_DEFAULT_URL="/${JUPYTER_DEFAULT_URL}"
@@ -88,7 +83,6 @@ echo "   ↳ Base URL: ${JUPYTER_BASE_URL}"
 echo "   ↳ Default URL: ${JUPYTER_DEFAULT_URL}"
 echo "   ↳ Root dir: ${JUPYTER_ROOT_DIR}"
 
-# Start Jupyter in the background with explicit base URL configuration.
 jupyter lab \
   --ip=0.0.0.0 \
   --port=8888 \
@@ -102,21 +96,18 @@ jupyter lab \
   > /workspace/jupyterlab.log 2>&1 &
 JUPYTER_PID=$!
 
-# Wait for the Jupyter server to be fully running
 echo "✅ Waiting for JupyterLab server to respond..."
 while ! jupyter server list > /dev/null 2>&1; do
   sleep 1
 done
 
-# Get the token directly from the server command (robust against either single
-# objects or JSON lists depending on the Jupyter version)
-TOKEN=$(jupyter server list --json | jq -r '.[0].token // .token')
-SERVER_URL=$(jupyter server list --json | jq -r '.[0].url // .url')
+RAW_JSON=$(jupyter server list --json)
+TOKEN=$(echo "$RAW_JSON" | jq -r 'if type=="array" then .[0].token else .token end')
+SERVER_URL=$(echo "$RAW_JSON" | jq -r 'if type=="array" then .[0].url else .url end')
 
-# Print the clean token for easy copying
 echo ""
 echo "JUPYTERLAB TOKEN: ${TOKEN}"
-echo "JUPYTERLAB URL: ${SERVER_URL}${JUPYTER_DEFAULT_URL#/}" 
+echo "JUPYTERLAB URL: ${SERVER_URL}${JUPYTER_DEFAULT_URL#/}"
 echo "(You may need this to log in to JupyterLab)"
 echo ""
 # ───────────────────────────────────────────────────────────────────────────
