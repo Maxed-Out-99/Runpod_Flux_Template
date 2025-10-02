@@ -49,16 +49,21 @@ clone_repo "https://github.com/crystian/ComfyUI-Crystools.git" "${CUSTOM_NODES_D
 if [ ! -f "$INSTALL_LOCK_FILE" ]; then
   # Add system packages needed for pycairo/rlpycairo/svglib
   if command -v apt >/dev/null 2>&1; then
-    echo "📦 Installing system libs for Cairo..."
     export DEBIAN_FRONTEND=noninteractive
-    apt update && apt install -y \
-      pkg-config \
-      libcairo2-dev \
-      libpango1.0-dev \
-      librsvg2-dev \
-      python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    echo "📦 Installing system libs for Cairo... (logs at /workspace/apt_install.log)"
+    {
+      apt -qq update
+      apt -qq install -y \
+        pkg-config \
+        libcairo2-dev \
+        libpango1.0-dev \
+        librsvg2-dev \
+        python3-dev
+      rm -rf /var/lib/apt/lists/*
+    } >>/workspace/apt_install.log 2>&1 || echo "⚠️ Apt install failed, see /workspace/apt_install.log"
   fi
+fi
+
 
 echo "🐍 First time setup: Installing all custom node dependencies..."
 
