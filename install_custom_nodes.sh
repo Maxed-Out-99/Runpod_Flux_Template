@@ -62,81 +62,76 @@ if [ ! -f "$INSTALL_LOCK_FILE" ]; then
       rm -rf /var/lib/apt/lists/*
     } >>/workspace/apt_install.log 2>&1 || echo "⚠️ Apt install failed, see /workspace/apt_install.log"
   fi
-fi
 
+  echo "🐍 First time setup: Installing all custom node dependencies..."
+  pip install --no-cache-dir \
+    GitPython \
+    PyGithub \
+    matrix-client==0.4.0 \
+    transformers \
+    'huggingface-hub>0.20' \
+    typer \
+    rich \
+    typing-extensions \
+    toml \
+    uv \
+    chardet \
+    'pillow>=10.3.0' \
+    'scipy>=1.11.4' \
+    color-matcher \
+    matplotlib \
+    mss \
+    segment-anything \
+    scikit-image \
+    piexif \
+    numpy==1.26.4 \
+    ultralytics \
+    importlib_metadata \
+    filelock \
+    einops \
+    pyyaml \
+    python-dateutil \
+    mediapipe \
+    svglib \
+    fvcore \
+    yapf \
+    omegaconf \
+    ftfy \
+    addict \
+    yacs \
+    'trimesh[easy]' \
+    'albumentations>=1.4.16' \
+    scikit-learn \
+    timm \
+    peft \
+    'accelerate>=0.26.0' \
+    insightface==0.7.3 \
+    'onnx>=1.14.0' \
+    'gguf>=0.13.0' \
+    sentencepiece \
+    protobuf \
+    cython \
+    facexlib \
+    onnxruntime-gpu \
+    deepdiff \
+    pynvml \
+    py-cpuinfo \
+    jetson-stats \
+    dill \
+    git+https://github.com/facebookresearch/sam2 \
+    > /workspace/custom_nodes_pip.log 2>&1
 
-echo "🐍 First time setup: Installing all custom node dependencies..."
+  echo "--- Running installer for Impact Pack ---"
+  python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py" >> /workspace/custom_nodes_pip.log 2>&1
 
-# Install Python deps quietly into a log
-pip install --no-cache-dir \
-  GitPython \
-  PyGithub \
-  matrix-client==0.4.0 \
-  transformers \
-  'huggingface-hub>0.20' \
-  typer \
-  rich \
-  typing-extensions \
-  toml \
-  uv \
-  chardet \
-  'pillow>=10.3.0' \
-  'scipy>=1.11.4' \
-  color-matcher \
-  matplotlib \
-  mss \
-  segment-anything \
-  scikit-image \
-  piexif \
-  numpy==1.26.4 \
-  ultralytics \
-  importlib_metadata \
-  filelock \
-  einops \
-  pyyaml \
-  python-dateutil \
-  mediapipe \
-  svglib \
-  fvcore \
-  yapf \
-  omegaconf \
-  ftfy \
-  addict \
-  yacs \
-  'trimesh[easy]' \
-  'albumentations>=1.4.16' \
-  scikit-learn \
-  timm \
-  peft \
-  'accelerate>=0.26.0' \
-  insightface==0.7.3 \
-  'onnx>=1.14.0' \
-  'gguf>=0.13.0' \
-  sentencepiece \
-  protobuf \
-  cython \
-  facexlib \
-  onnxruntime-gpu \
-  deepdiff \
-  pynvml \
-  py-cpuinfo \
-  jetson-stats \
-  dill \
-  git+https://github.com/facebookresearch/sam2 \
-  > /workspace/custom_nodes_pip.log 2>&1
+  echo "--- Running installer for Reactor ---"
+  python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py" >> /workspace/custom_nodes_pip.log 2>&1
 
-echo "--- Running installer for Impact Pack ---"
-python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py" >> /workspace/custom_nodes_pip.log 2>&1
+  python3 -c "import torch; print('Final torch version:', torch.__version__)" >> /workspace/custom_nodes_pip.log 2>&1
 
-echo "--- Running installer for Reactor ---"
-python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py" >> /workspace/custom_nodes_pip.log 2>&1
-
-python3 -c "import torch; print('Final torch version:', torch.__version__)" >> /workspace/custom_nodes_pip.log 2>&1
-
-touch "$INSTALL_LOCK_FILE"
-echo "✅ Python dependencies installed."
-echo "ℹ️  Full pip logs: /workspace/custom_nodes_pip.log"
-
+  touch "$INSTALL_LOCK_FILE"
+  echo "✅ Python dependencies installed."
+  echo "ℹ️  Full pip logs: /workspace/custom_nodes_pip.log"
 else
   echo "✅ Python dependencies already installed, skipping."
 fi
