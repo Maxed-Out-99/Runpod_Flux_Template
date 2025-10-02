@@ -98,11 +98,15 @@ def auth():
     cb = runpod_callback_url()
     return redirect(f"{GATEWAY}/start?pod_callback={cb}")
 
-# add this near your other static routes
 @app.route("/fail")
+@app.route("/fail/")
 def fail():
-    return send_file("/workspace/auth/fail.html")
-
+    try:
+        return send_file("/workspace/auth/fail.html")
+    except Exception as e:
+        print("⚠️ Fail page error:", e)
+        return "<h1>Access Denied</h1><p>Fail page could not be loaded.</p>", 500
+        
 @app.route("/callback")
 @app.route("/callback/")
 def callback():
@@ -172,7 +176,7 @@ def callback():
 
     except EntitlementError as e:
         print(f"❌ Entitlement failure: {e}")
-        return redirect("/fail")
+        return send_file("/workspace/auth/fail.html")
 
     except Exception as e:
         print(f"❌ Download via gateway failed: {e}")
