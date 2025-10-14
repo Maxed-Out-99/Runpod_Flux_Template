@@ -45,95 +45,43 @@ clone_repo "https://github.com/kijai/ComfyUI-DepthAnythingV2.git" "${CUSTOM_NODE
 clone_repo "https://github.com/lldacing/ComfyUI_PuLID_Flux_ll.git" "${CUSTOM_NODES_DIR}/ComfyUI_PuLID_Flux_ll" "" "ba90657fe6ffa8072ac169a949bfa5e4153bf48a"
 clone_repo "https://github.com/crystian/ComfyUI-Crystools.git" "${CUSTOM_NODES_DIR}/ComfyUI-Crystools" "" "de7934df6655497458b2129824b9db31f80cd09f"
 
-# Install Python dependencies only if they haven't been installed before
-if [ ! -f "$INSTALL_LOCK_FILE" ]; then
-  # Add system packages needed for pycairo/rlpycairo/svglib
-  if command -v apt >/dev/null 2>&1; then
-    export DEBIAN_FRONTEND=noninteractive
-    echo "📦 Installing system libs for Cairo... (logs at /workspace/apt_install.log)"
-    {
-      apt -qq update
-      apt -qq install -y \
-        pkg-config \
-        libcairo2-dev \
-        libpango1.0-dev \
-        librsvg2-dev \
-        python3-dev
-      rm -rf /var/lib/apt/lists/*
-    } >>/workspace/apt_install.log 2>&1 || echo "⚠️ Apt install failed, see /workspace/apt_install.log"
-  fi
+# ─── Verify & update custom node dependencies each boot ─────────────────────────────
+echo "🐍 Verifying custom node dependencies..."
 
-  echo "🐍 First time setup: Installing all custom node dependencies..."
-  pip install --no-cache-dir \
-    GitPython \
-    PyGithub \
-    matrix-client==0.4.0 \
-    transformers \
-    'huggingface-hub>0.20' \
-    typer \
-    rich \
-    typing-extensions \
-    toml \
-    uv \
-    chardet \
-    'pillow>=10.3.0' \
-    'scipy>=1.11.4' \
-    color-matcher \
-    matplotlib \
-    mss \
-    segment-anything \
-    scikit-image \
-    piexif \
-    numpy==1.26.4 \
-    ultralytics \
-    importlib_metadata \
-    filelock \
-    einops \
-    pyyaml \
-    python-dateutil \
-    mediapipe \
-    svglib \
-    fvcore \
-    yapf \
-    omegaconf \
-    ftfy \
-    addict \
-    yacs \
-    'trimesh[easy]' \
-    'albumentations>=1.4.16' \
-    scikit-learn \
-    timm \
-    peft \
-    'accelerate>=0.26.0' \
-    insightface==0.7.3 \
-    'onnx>=1.14.0' \
-    'gguf>=0.13.0' \
-    sentencepiece \
-    protobuf \
-    cython \
-    facexlib \
-    onnxruntime-gpu \
-    deepdiff \
-    pynvml \
-    py-cpuinfo \
-    jetson-stats \
-    dill \
-    git+https://github.com/facebookresearch/sam2 \
-    > /workspace/custom_nodes_pip.log 2>&1
-
-  echo "--- Running installer for Impact Pack ---"
-  python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py" >> /workspace/custom_nodes_pip.log 2>&1
-
-  echo "--- Running installer for Reactor ---"
-  python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py" >> /workspace/custom_nodes_pip.log 2>&1
-
-  python3 -c "import torch; print('Final torch version:', torch.__version__)" >> /workspace/custom_nodes_pip.log 2>&1
-
-  touch "$INSTALL_LOCK_FILE"
-  echo "✅ Python dependencies installed."
-  echo "ℹ️  Full pip logs: /workspace/custom_nodes_pip.log"
-else
-  echo "✅ Python dependencies already installed, skipping."
+# Ensure Cairo build libs exist (safe, idempotent)
+if command -v apt >/dev/null 2>&1; then
+  export DEBIAN_FRONTEND=noninteractive
+  apt -qq update
+  apt -qq install -y pkg-config libcairo2-dev libpango1.0-dev librsvg2-dev python3-dev \
+      > /dev/null 2>&1 || true
 fi
+
+# Unified dependency list (clean + future-proof)
+NODE_REQUIREMENTS=(
+  GitPython PyGithub matrix-client==0.4.0 transformers "huggingface-hub>0.20"
+  typer rich toml uv chardet "pillow>=10.3.0" "scipy>=1.11.4" color-matcher matplotlib mss
+  segment-anything scikit-image piexif "numpy>=1.26.4" ultralytics importlib_metadata filelock
+  einops pyyaml python-dateutil mediapipe svglib fvcore yapf omegaconf ftfy addict yacs
+  "trimesh[easy]" "albumentations>=1.4.16" scikit-learn timm peft "accelerate>=0.26.0"
+  insightface==0.7.3 "onnx>=1.14.0" "gguf>=0.13.0" sentencepiece protobuf cython facexlib
+  onnxruntime-gpu deepdiff pynvml py-cpuinfo jetson-stats dill
+  "git+https://github.com/facebookresearch/sam2"
+)
+
+# Install / update (pip skips already-satisfied deps)
+echo "📦 Running pip verify-install..."
+pip install --no-cache-dir -U "${NODE_REQUIREMENTS[@]}" > /workspace/custom_nodes_pip.log 2>&1 || \
+  echo "⚠️  Pip encountered warnings — see /workspace/custom_nodes_pip.log"
+
+# Run node-specific installers (safe to repeat)
+python3 "${CUSTOM_NODES_DIR}/ComfyUI-Impact-Pack/install.py"  >> /workspace/custom_nodes_pip.log 2>&1 || true
+python3 "${CUSTOM_NODES_DIR}/comfyui-reactor-node/install.py" >> /workspace/custom_nodes_pip.log 2>&1 || true
+
+python3 -c "import torch; print('Final torch version:', torch.__version__)" >> /workspace/custom_nodes_pip.log 2>&1
+
+touch "$INSTALL_LOCK_FILE"   # keep the marker but no longer gate installs
+echo "✅ Verified Python dependencies."
+echo "ℹ️  Full pip logs: /workspace/custom_nodes_pip.log"
+# ────────────────────────────────────────────────────────────────────────────────
 
 echo "✅ Custom node setup complete."
