@@ -30,13 +30,10 @@ ln -s /workspace/ComfyUI /ComfyUI
 
 # 📦 Install custom nodes once
 NODES_LOCK="/workspace/.custom_nodes_installed"
-if [ ! -f "$NODES_LOCK" ]; then
-    echo "⬇️ Installing custom nodes..."
-    bash /opt/install_custom_nodes.sh
-    touch "$NODES_LOCK"
-else
-    echo "✅ Custom nodes already installed. Skipping."
-fi
+# 📦 Always verify custom nodes (self-healing)
+echo "🔄 Verifying custom nodes..."
+bash /opt/install_custom_nodes.sh
+
 
 export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
 
