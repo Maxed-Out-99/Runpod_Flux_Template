@@ -1,108 +1,87 @@
-# Base image with CUDA 12.1 and Ubuntu 22.04
-FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+FROM nvidia/cuda:13.3.1-cudnn-runtime-ubuntu24.04
 
 LABEL maintainer="maxedout.ai" \
-      version="flux-v1" \
-      description="RunPod-ready container for ComfyUI + Patreon-auth + Flux"
+      version="minimax-h3-v1" \
+      description="Runpod-ready ComfyUI image for Turbo and non-Turbo MiniMax H3 10Eros Max Hybrid Beta 5 INT8"
 
-ENV PYTHONUNBUFFERED=1
+ARG DEBIAN_FRONTEND=noninteractive
+ARG COMFYUI_VERSION=v0.37.0
+ARG TORCH_VERSION=2.14.0
+ARG TORCHVISION_VERSION=0.29.0
+ARG TORCHAUDIO_VERSION=2.11.0
+ARG MAXEDOUT_NODES_REPO=https://github.com/Maxed-Out-99/ComfyUI-MaxedOut.git
+ARG VHS_NODES_REPO=https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
+ARG KJ_NODES_REPO=https://github.com/kijai/ComfyUI-KJNodes.git
+ARG COMFY_GALLERY_REPO=https://github.com/Maxed-Out-99/ComfyGallery.git
+ARG CUSTOM_NODES_CACHE_BUST=manual
 
-# Set build args for flexibility
-ARG PYTORCH_VERSION=2.5.1
-ARG TORCHVISION_VERSION=0.20.1
+ENV PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    HF_HUB_DOWNLOAD_TIMEOUT=60 \
+    HF_XET_HIGH_PERFORMANCE=1 \
+    PATH="/opt/venv/bin:${PATH}"
 
-# Install system dependencies
-RUN apt update && apt install -y \
-    python3 python3-pip git git-lfs wget curl unzip && \
-    git lfs install && \
-    apt clean && rm -rf /var/lib/apt/lists/*
-
-
-COPY requirements.freeze.txt /tmp/requirements.freeze.txt
-
-RUN pip install --no-cache-dir -r /tmp/requirements.freeze.txt
-
-# Install build tools for insightface & others
-RUN apt update && apt install -y \
-    build-essential \
-    cmake \
-    libgl1 \
-    ffmpeg \
-    ninja-build \
-    jq \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        ffmpeg \
+        git \
+        libgl1 \
+        libglib2.0-0 \
+        python3 \
+        python3-pip \
+        python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip tools to known good versions
-RUN pip install --no-cache-dir pip==24.0 setuptools==70.0.0 wheel==0.43.0
+RUN python3 -m venv /opt/venv \
+    && python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install \
+        torch==${TORCH_VERSION} \
+        torchvision==${TORCHVISION_VERSION} \
+        torchaudio==${TORCHAUDIO_VERSION} \
+        --index-url https://download.pytorch.org/whl/cu130
 
-# Add Jupyter Notebook
-RUN pip3 install jupyterlab
+RUN git clone --depth 1 --branch "${COMFYUI_VERSION}" \
+        https://github.com/Comfy-Org/ComfyUI.git /opt/ComfyUI \
+    && python -m pip install --retries 10 -r /opt/ComfyUI/requirements.txt \
+    && python -m pip install "huggingface-hub>=0.34,<2" "hf-xet>=1.1,<2"
 
-# Set working directory
-WORKDIR /workspace
-
-# Clone ComfyUI
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /opt/ComfyUI && \
-    cd /opt/ComfyUI && \
-    git checkout aebac221937b511d46fe601656acdc753435b849
-
-# Install ComfyUI base requirements
-RUN pip install --no-cache-dir --retries=10 -r /opt/ComfyUI/requirements.txt
-
-# Install PyTorch (with CUDA 12.1 support)
-RUN pip install --no-cache-dir \
-    torch==${PYTORCH_VERSION} \
-    torchvision==${TORCHVISION_VERSION} \
-    torchaudio==${PYTORCH_VERSION} \
-    --index-url https://download.pytorch.org/whl/cu121
-
-# Install insightface directly
-RUN pip install --no-cache-dir insightface==0.7.3
-RUN pip install --no-cache-dir --use-pep517 facexlib
-
-RUN pip install --no-cache-dir \
-    invisible-watermark \
-    onnx onnxruntime \
-    opencv-python==4.12.0.88
-
-# Reinstall correct NumPy
-RUN pip uninstall -y numpy && pip install --no-cache-dir numpy==1.26.4
-
-# Copy scripts and workflows
-COPY --chmod=755 start.sh /opt/start.sh
-COPY --chmod=755 workflows/ /opt/ComfyUI/user/default/workflows/
-COPY --chmod=644 comfy.settings.json /opt/ComfyUI/user/default/comfy.settings.json
-COPY --chmod=755 custom_nodes/ComfyUI-MaxedOut-Runpod /opt/ComfyUI/custom_nodes/ComfyUI-MaxedOut-Runpod
-
-# Copy scripts nodes
 COPY --chmod=755 scripts/ /opt/scripts/
 
-# Copy Patreon auth files
-COPY --chmod=755 auth/app.py /opt/auth/app.py
-COPY --chmod=644 auth/success.html /opt/auth/success.html
-COPY --chmod=644 auth/fail.html /opt/auth/fail.html
-COPY --chmod=644 auth/index.html /opt/auth/index.html
-COPY --chmod=644 auth/downloading.html /opt/auth/downloading.html
-COPY --chmod=644 auth/requirements.txt /opt/auth/requirements.txt
-COPY --chmod=644 auth/images/mega_exclusives.jpg /opt/auth/images/mega_exclusives.jpg
-COPY auth/public.pem /opt/auth/public.pem
+RUN echo "[build] Custom-node refresh: ${CUSTOM_NODES_CACHE_BUST}" \
+    && git clone --depth 1 "${MAXEDOUT_NODES_REPO}" \
+        /opt/ComfyUI/custom_nodes/ComfyUI-MaxedOut \
+    && git clone --depth 1 "${VHS_NODES_REPO}" \
+        /opt/ComfyUI/custom_nodes/ComfyUI-VideoHelperSuite \
+    && git clone --depth 1 "${KJ_NODES_REPO}" \
+        /opt/ComfyUI/custom_nodes/ComfyUI-KJNodes \
+    && git clone --depth 1 "${COMFY_GALLERY_REPO}" \
+        /opt/ComfyUI/custom_nodes/ComfyGallery \
+    && python /opt/scripts/patch_comfygallery.py \
+        /opt/ComfyUI/custom_nodes/ComfyGallery/web/comfy_gallery_button.js \
+    && python -m pip install --retries 10 \
+        -r /opt/ComfyUI/custom_nodes/ComfyUI-VideoHelperSuite/requirements.txt \
+        -r /opt/ComfyUI/custom_nodes/ComfyUI-KJNodes/requirements.txt \
+        -r /opt/ComfyUI/custom_nodes/ComfyGallery/requirements.txt \
+    && python -m pip uninstall -y opencv-python \
+    && python -m pip install --force-reinstall --no-deps opencv-python-headless \
+    && python -m pip check \
+    && python -m compileall -q \
+        /opt/ComfyUI/custom_nodes/ComfyUI-MaxedOut \
+        /opt/ComfyUI/custom_nodes/ComfyUI-VideoHelperSuite \
+        /opt/ComfyUI/custom_nodes/ComfyUI-KJNodes \
+        /opt/ComfyUI/custom_nodes/ComfyGallery \
+    && python -c "import color_matcher, cv2, imageio_ffmpeg, matplotlib, mss; from PIL import Image"
 
+COPY --chmod=755 start.sh /opt/start.sh
+COPY --chmod=644 comfy.settings.json /opt/comfy.settings.json
 
+EXPOSE 8188 8190
 
-RUN pip install --no-cache-dir -r /opt/auth/requirements.txt
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=5 CMD \
+  curl -fsS http://localhost:8188/prompt \
+  && curl -fsS http://localhost:8190/api/config \
+  || exit 1
 
-# Copy the custom node installer script and run it so dependencies are baked in
-COPY --chmod=755 install_custom_nodes.sh /opt/install_custom_nodes.sh
-
-# Expose ComfyUI default port
-EXPOSE 8188
-# Expose Patreon unlock server port
-EXPOSE 7860
-# Expose JupyterLab port
-EXPOSE 8888
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
-  curl -fsS http://localhost:8188/queue/status || exit 1
-
-# Entrypoint
 CMD ["/opt/start.sh"]

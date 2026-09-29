@@ -1,134 +1,140 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-# --- Minimal PV-safe bootstrap (no behavior change to your flow) ---
-# Make sure the persistent volume mount exists
-mkdir -p /workspace
+readonly WORKSPACE="${WORKSPACE:-/workspace}"
+readonly IMAGE_COMFYUI="/opt/ComfyUI"
+readonly COMFYUI_DIR="${COMFYUI_DIR:-${WORKSPACE}/ComfyUI}"
+readonly LOG_DIR="${WORKSPACE}/logs"
+readonly DOWNLOAD_LOG="${LOG_DIR}/minimax-h3-models.log"
+readonly DOWNLOAD_STATUS="${WORKSPACE}/model-download.status.json"
+readonly GALLERY_LOG="${LOG_DIR}/comfygallery.log"
 
-# Seed ComfyUI onto the PV on first run (includes .git, configs, etc.)
-if [[ ! -d /workspace/ComfyUI ]]; then
-  echo "[init] Seeding ComfyUI into /workspace..."
-  cp -a /opt/ComfyUI /workspace/ComfyUI
+mkdir -p "${WORKSPACE}" "${LOG_DIR}"
+
+if [[ ! -d "${COMFYUI_DIR}" ]]; then
+  echo "[init] Seeding ComfyUI into ${COMFYUI_DIR}"
+  cp -a "${IMAGE_COMFYUI}" "${COMFYUI_DIR}"
 fi
 
-# Seed your scripts and auth app to the PV (first run only)
-if [[ ! -d /workspace/scripts ]]; then
-  cp -a /opt/scripts /workspace/scripts
-fi
+readonly -a PACKAGED_NODES=(
+  "ComfyUI-MaxedOut"
+  "ComfyUI-VideoHelperSuite"
+  "ComfyUI-KJNodes"
+  "ComfyGallery"
+)
 
-if [[ ! -d /workspace/auth ]]; then
-  cp -a /opt/auth /workspace/auth
-fi
+mkdir -p "${COMFYUI_DIR}/custom_nodes"
 
-# Ensure runtime dirs exist (ComfyUI will use these)
-mkdir -p /workspace/{input,output,temp,user/default/workflows}
-
-# Convenience: keep /ComfyUI path available for anything that expects it
-rm -rf /ComfyUI 2>/dev/null || true
-ln -s /workspace/ComfyUI /ComfyUI
-# --- end minimal bootstrap ---
-
-# 📦 Install custom nodes once
-NODES_LOCK="/workspace/.custom_nodes_installed"
-# 📦 Always verify custom nodes (self-healing)
-echo "🔄 Verifying custom nodes..."
-bash /opt/install_custom_nodes.sh
-
-
-export PYTHONPATH="/workspace/scripts:${PYTHONPATH}"
-
-echo "🔥 STARTING FLUX V1 @ $(date) — Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
-
-# 📦 Install core models once
-INSTALL_LOCK="/workspace/.flux_installed"
-
-if [ ! -f "$INSTALL_LOCK" ]; then
-    echo "⬇️  Downloading core FLUX models..."
-    python3 /workspace/scripts/download_core_models.py
-    touch "$INSTALL_LOCK"
-else
-    echo "✅ Core FLUX models already installed. Skipping download."
-fi
-
-# 🔐 Start Patreon unlock server
-echo "🔐 Starting Patreon unlock server..."
-python3 -u /workspace/auth/app.py > /workspace/unlock.log 2>&1 &
-sleep 2
-
-# 🚀 Launch ComfyUI in the background
-echo "🚀 Starting ComfyUI..."
-python3 /workspace/ComfyUI/main.py --listen 0.0.0.0 --port 8188 > /workspace/comfyui.log 2>&1 &
-COMFYUI_PID=$!
-sleep 2
-
-# ─── JUPYTER STARTUP ───────────────────────────────────────────
-echo "🚀 Starting JupyterLab..."
-
-JUPYTER_BASE_URL="${RUNPOD_JUPYTER_PROXY_PATH:-/}"
-if [[ -n "$JUPYTER_BASE_URL" && "${JUPYTER_BASE_URL:0:1}" != "/" ]]; then
-  JUPYTER_BASE_URL="/${JUPYTER_BASE_URL}"
-fi
-
-JUPYTER_DEFAULT_URL="${RUNPOD_JUPYTER_DEFAULT_URL:-/lab}"
-if [[ -n "$JUPYTER_DEFAULT_URL" && "${JUPYTER_DEFAULT_URL:0:1}" != "/" ]]; then
-  JUPYTER_DEFAULT_URL="/${JUPYTER_DEFAULT_URL}"
-fi
-
-JUPYTER_ROOT_DIR="${RUNPOD_JUPYTER_ROOT:-/workspace}"
-
-echo "   ↳ Base URL: ${JUPYTER_BASE_URL}"
-echo "   ↳ Default URL: ${JUPYTER_DEFAULT_URL}"
-echo "   ↳ Root dir: ${JUPYTER_ROOT_DIR}"
-
-jupyter lab \
-  --ip=0.0.0.0 \
-  --port=8888 \
-  --no-browser \
-  --allow-root \
-  --ServerApp.base_url="/" \
-  --ServerApp.default_url="/lab" \
-  --ServerApp.root_dir="/workspace" \
-  --ServerApp.allow_remote_access=True \
-  --ServerApp.trust_xheaders=True \
-  --ServerApp.allow_origin="*" \
-  --ServerApp.disable_check_xsrf=True \
-  > /workspace/jupyterlab.log 2>&1 &
-JUPYTER_PID=$!
-
-echo "✅ Waiting for JupyterLab server to respond..."
-while ! jupyter server list > /dev/null 2>&1; do
-  sleep 1
+for node_name in "${PACKAGED_NODES[@]}"; do
+  source_dir="${IMAGE_COMFYUI}/custom_nodes/${node_name}"
+  destination_dir="${COMFYUI_DIR}/custom_nodes/${node_name}"
+  if [[ ! -d "${destination_dir}" ]]; then
+    echo "[init] Adding packaged custom node: ${node_name}"
+    cp -a "${source_dir}" "${destination_dir}"
+  elif [[ -d "${source_dir}/.git" && -d "${destination_dir}/.git" ]]; then
+    image_revision="$(git -C "${source_dir}" rev-parse HEAD 2>/dev/null || true)"
+    volume_revision="$(git -C "${destination_dir}" rev-parse HEAD 2>/dev/null || true)"
+    if [[ -n "${image_revision}" && -n "${volume_revision}" && "${image_revision}" != "${volume_revision}" ]]; then
+      echo "[warning] ${node_name} on the persistent volume differs from this image; preserving the volume copy"
+    fi
+  fi
 done
 
-RAW_JSON=$(jupyter server list --json)
-TOKEN=$(echo "$RAW_JSON" | jq -r 'if type=="array" then .[0].token else .token end')
-SERVER_URL=$(echo "$RAW_JSON" | jq -r 'if type=="array" then .[0].url else .url end')
+image_comfy_revision="$(git -C "${IMAGE_COMFYUI}" rev-parse HEAD 2>/dev/null || true)"
+volume_comfy_revision="$(git -C "${COMFYUI_DIR}" rev-parse HEAD 2>/dev/null || true)"
+if [[ -n "${image_comfy_revision}" && -n "${volume_comfy_revision}" && "${image_comfy_revision}" != "${volume_comfy_revision}" ]]; then
+  echo "[warning] Persistent ComfyUI differs from the image version; preserving /workspace/ComfyUI"
+fi
 
-echo ""
-echo "JUPYTERLAB TOKEN: ${TOKEN}"
-echo "JUPYTERLAB URL: ${SERVER_URL}${JUPYTER_DEFAULT_URL#/}"
-echo "(You may need this to log in to JupyterLab)"
-echo ""
-# ───────────────────────────────────────────────────────────────
+mkdir -p \
+  "${COMFYUI_DIR}/models/diffusion_models" \
+  "${COMFYUI_DIR}/models/text_encoders" \
+  "${COMFYUI_DIR}/models/vae" \
+  "${COMFYUI_DIR}/input" \
+  "${COMFYUI_DIR}/output" \
+  "${COMFYUI_DIR}/temp" \
+  "${COMFYUI_DIR}/user/default"
 
-# Wait for ComfyUI to be ready
-CHECK_INTERVAL=5
-TIMEOUT=60
-ELAPSED=0
+if [[ ! -f "${COMFYUI_DIR}/user/default/comfy.settings.json" ]]; then
+  cp /opt/comfy.settings.json "${COMFYUI_DIR}/user/default/comfy.settings.json"
+fi
 
-while ! python3 -c "import socket; s = socket.socket(); s.settimeout(1); s.connect(('127.0.0.1', 8188)); s.close()" 2>/dev/null; do
-  if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-    cat /workspace/comfyui.log
+echo "[models] Starting verified MiniMax H3 downloads in the background"
+python /opt/scripts/download_models.py \
+  --comfy-root "${COMFYUI_DIR}" \
+  --status-file "${DOWNLOAD_STATUS}" \
+  >> "${DOWNLOAD_LOG}" 2>&1 &
+DOWNLOAD_PID=$!
+
+cleanup() {
+  local exit_code=$?
+  if kill -0 "${DOWNLOAD_PID}" 2>/dev/null; then
+    kill "${DOWNLOAD_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${COMFYUI_PID:-}" ]] && kill -0 "${COMFYUI_PID}" 2>/dev/null; then
+    kill "${COMFYUI_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${GALLERY_PID:-}" ]] && kill -0 "${GALLERY_PID}" 2>/dev/null; then
+    kill "${GALLERY_PID}" 2>/dev/null || true
+  fi
+  wait 2>/dev/null || true
+  exit "${exit_code}"
+}
+trap cleanup EXIT INT TERM
+
+read -r -a EXTRA_ARGS <<< "${COMFYUI_ARGS:---enable-dynamic-vram}"
+
+echo "[comfyui] Starting on 0.0.0.0:8188"
+python "${COMFYUI_DIR}/main.py" \
+  --listen 0.0.0.0 \
+  --port 8188 \
+  "${EXTRA_ARGS[@]}" \
+  > "${LOG_DIR}/comfyui.log" 2>&1 &
+COMFYUI_PID=$!
+
+echo "[gallery] Starting on 0.0.0.0:8190"
+python "${COMFYUI_DIR}/custom_nodes/ComfyGallery/comfy_gallery.py" \
+  --no-browser \
+  --host 0.0.0.0 \
+  --port 8190 \
+  --comfyui-path "${COMFYUI_DIR}" \
+  --parent-pid "${COMFYUI_PID}" \
+  > "${GALLERY_LOG}" 2>&1 &
+GALLERY_PID=$!
+
+readonly DEADLINE=$((SECONDS + 180))
+until curl -fsS http://127.0.0.1:8188/prompt >/dev/null 2>&1; do
+  if ! kill -0 "${COMFYUI_PID}" 2>/dev/null; then
+    echo "[comfyui] Process exited before becoming ready"
+    tail -n 200 "${LOG_DIR}/comfyui.log" || true
     exit 1
   fi
-  sleep "$CHECK_INTERVAL"
-  ELAPSED=$((ELAPSED + CHECK_INTERVAL))
+  if (( SECONDS >= DEADLINE )); then
+    echo "[comfyui] Timed out waiting for port 8188"
+    tail -n 200 "${LOG_DIR}/comfyui.log" || true
+    exit 1
+  fi
+  sleep 3
 done
 
-# Add these lines to confirm ComfyUI is ready
-echo "✅ ComfyUI is listening on port 8188. Startup complete."
-echo ""
-echo ""
+readonly GALLERY_DEADLINE=$((SECONDS + 90))
+until curl -fsS http://127.0.0.1:8190/api/config >/dev/null 2>&1; do
+  if ! kill -0 "${GALLERY_PID}" 2>/dev/null; then
+    echo "[gallery] Process exited before becoming ready"
+    tail -n 200 "${GALLERY_LOG}" || true
+    exit 1
+  fi
+  if (( SECONDS >= GALLERY_DEADLINE )); then
+    echo "[gallery] Timed out waiting for port 8190"
+    tail -n 200 "${GALLERY_LOG}" || true
+    exit 1
+  fi
+  sleep 2
+done
 
-# Keeps the container alive as long as ComfyUI and JupyterLab run
-wait $COMFYUI_PID $JUPYTER_PID
+echo "[ready] ComfyUI is available on port 8188"
+echo "[ready] ComfyGallery is available on port 8190"
+echo "[models] Log: ${DOWNLOAD_LOG}"
+echo "[models] Status: ${DOWNLOAD_STATUS}"
+
+wait "${COMFYUI_PID}"

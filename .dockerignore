@@ -1,0 +1,10 @@
+.git
+.github
+.gitignore
+README.md
+LICENSE
+NOTICE
+tests
+__pycache__
+*.pyc
+*.log

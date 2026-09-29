@@ -5,7 +5,6 @@
     "Comfy.Graph.CtrlShiftZoom": true,
     "Comfy.Graph.CanvasMenu": true,
     "Comfy.Graph.CanvasInfo": true,
-    "pysssss.SnapToGrid": true,
     "Comfy.Graph.LinkMarkers": 2,
     "Comfy.LinkRelease.Action": "no action",
     "Comfy.NodeBadge.NodeLifeCycleBadgeMode": "None",
