@@ -2,7 +2,7 @@
 
 A minimal Runpod/ComfyUI image for **Turbo and non-Turbo MiniMax H3 10Eros Max Hybrid Beta 5 INT8** generation with native audio.
 
-This fork removes the Flux models and workflows, Jupyter/auth service, and Patreon installer. It serves ComfyUI on port `8188`, ComfyGallery on port `8190`, includes the four custom-node repositories listed below, and downloads the five required model files to persistent storage on first boot. No workflow is bundled.
+This fork removes the Flux models and workflows, Jupyter/auth service, and Patreon installer. It serves ComfyUI on port `8188`, ComfyGallery on port `8190`, includes the five custom-node repositories listed below, and downloads the five required model files to `/workspace` on first boot. No workflow is bundled.
 
 ## Included custom nodes
 
@@ -10,8 +10,9 @@ This fork removes the Flux models and workflows, Jupyter/auth service, and Patre
 - [`Kosinkadink/ComfyUI-VideoHelperSuite`](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite) (VHS)
 - [`kijai/ComfyUI-KJNodes`](https://github.com/kijai/ComfyUI-KJNodes)
 - [`Maxed-Out-99/ComfyGallery`](https://github.com/Maxed-Out-99/ComfyGallery)
+- [`crystian/ComfyUI-Crystools`](https://github.com/crystian/ComfyUI-Crystools) (resource monitor and utility nodes)
 
-All four repositories are intentionally unpinned. Docker clones the current default branch during each image build. Rebuilding the same image tag later can therefore produce different node versions; use a new semantic image tag for each build. VHS, KJNodes, and ComfyGallery requirements are installed from their current upstream manifests during the build, and FFmpeg is included in the image.
+All five repositories are intentionally unpinned. Docker clones the current default branch during each image build. Rebuilding the same image tag later can therefore produce different node versions; use a new semantic image tag for each build. VHS, KJNodes, ComfyGallery, and Crystools requirements are installed from their current upstream manifests during the build, and FFmpeg is included in the image.
 
 ## Runtime versions
 
