@@ -67,6 +67,8 @@ A 24 GB GPU and 64 GB or more of system RAM is the practical baseline for this q
 
 ComfyUI starts while model downloads continue in the background. You can open your workflow immediately, but generation will fail until all files are present and verified.
 
+The bundled `comfy.settings.json` is copied to `/workspace/ComfyUI/user/default/comfy.settings.json` on a fresh pod. It contains the local ComfyUI appearance, canvas, shortcut, preview, and custom-node settings. An existing settings file is preserved.
+
 - ComfyUI log: `/workspace/logs/comfyui.log`
 - ComfyGallery log: `/workspace/logs/comfygallery.log`
 - Download log: `/workspace/logs/minimax-h3-models.log`
