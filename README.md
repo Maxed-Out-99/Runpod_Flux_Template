@@ -2,7 +2,7 @@
 
 A minimal Runpod/ComfyUI image for **Turbo and non-Turbo MiniMax H3 10Eros Max Hybrid Beta 5 INT8** generation with native audio.
 
-This fork removes the Flux models and workflows, Jupyter/auth service, and Patreon installer. It serves ComfyUI on port `8188`, ComfyGallery on port `8190`, includes the five custom-node repositories listed below, and downloads the five required model files to `/workspace` on first boot. No workflow is bundled.
+This fork removes the Flux models and workflows, Jupyter/auth service, and Patreon installer. It serves ComfyUI on port `8188`, ComfyGallery on port `8190`, includes the five custom-node repositories listed below, and downloads six model files to `/workspace` on first boot. No workflow is bundled.
 
 ## Included custom nodes
 
@@ -34,9 +34,12 @@ ComfyGallery starts with the container on port `8190`. Its browser button is adj
 | `text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | `Comfy-Org/MiniMax-H3` | 15.70 GB | `35a88d51044231fe332301d7a62aa81e3f2cba62febeb446e2c1e3e0ef76f2c6` |
 | `vae/minimax_h3_video_vae_int8_convrot.safetensors` | `Comfy-Org/MiniMax-H3` | 2.81 GB | `52a2c8c73583c86e4f41cdcce3a6ad0ea562987bc0bf3d60a0cef5f5c8e60c0e` |
 | `vae/minimax_h3_audio_vae_fp32.safetensors` | `Comfy-Org/MiniMax-H3` | 0.61 GB | `8e505d95dd1561d47abd43d4238fd40d9bb1ae9e147ed0a4cba778d76ae4db48` |
+| `background_removal/birefnet.safetensors` | `Comfy-Org/BiRefNet` | 0.44 GB | `9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154` |
 | `diffusion_models/10Eros_Max_h3_hybrid_beta5_int8.safetensors` | `TenStrip/10Eros-Max` | 20.97 GB | `488e0d51fad9fd6b277b6ebfbe46b3fd44374ff7baa1e3c9dfce58d3a1e5b33c` |
 
-The table is also the download order: Turbo first and non-Turbo last. Total model storage is about **61.0 GB** (decimal), excluding Hugging Face's temporary download cache and generated videos. Revisions and hashes are pinned in `scripts/download_models.py`.
+The table is also the download order: Turbo first and non-Turbo last. Total model storage is about **61.5 GB** (decimal), excluding Hugging Face's temporary download cache and generated videos. Revisions and hashes are pinned in `scripts/download_models.py`.
+
+The background-removal file is the official ComfyUI-compatible BiRefNet checkpoint. It appears as `birefnet.safetensors` in the built-in **Load Background Removal Model** node and works with **Remove Background**. The older `comfyui-rmbg` custom node and Bria RMBG 2.0 are not needed for these built-in nodes. **Remove Background** outputs a mask; use ComfyUI's image/mask compositing nodes if you need a transparent image.
 
 No model weights are included in this repository or Docker image.
 
@@ -58,9 +61,9 @@ The included GitHub Actions workflow runs tests, builds `linux/amd64`, refreshes
 - Container image: `maxedout99/runpod-minimax-h3:v1.0.0` (or your registry/tag)
 - HTTP ports: `8188` for ComfyUI and `8190` for ComfyGallery
 - Volume mount: `/workspace`
-- Container disk: at least `40 GB`
-- Persistent volume: at least `100 GB`; `150 GB` is safer for outputs and download staging
-- Environment variable `HF_TOKEN`: a Hugging Face token that can access both repositories
+- Without a persistent volume: use at least `120 GB` of container disk; everything under `/workspace`, including downloaded models and outputs, is lost when the pod is deleted
+- With a persistent volume: use at least `100 GB` of volume storage and `40 GB` of container disk
+- Environment variable `HF_TOKEN`: a Hugging Face token that can access the MiniMax H3 and 10Eros repositories (BiRefNet is public)
 - Environment variable `MINIMAX_H3_AUTHORIZED=1`: required acknowledgement of model authorization
 
 A 24 GB GPU and 64 GB or more of system RAM is the practical baseline for this quantized stack. Actual capacity depends on resolution, frame count, and ComfyUI's memory behavior.

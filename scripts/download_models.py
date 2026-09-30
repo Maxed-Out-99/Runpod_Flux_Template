@@ -58,6 +58,14 @@ MODELS = (
         size_bytes=605_254_808,
     ),
     ModelFile(
+        repo_id="Comfy-Org/BiRefNet",
+        revision="35767b272f2846752a3aee1259abdd4586f735c8",
+        filename="background_removal/birefnet.safetensors",
+        destination="background_removal/birefnet.safetensors",
+        sha256="9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154",
+        size_bytes=444_473_596,
+    ),
+    ModelFile(
         repo_id="TenStrip/10Eros-Max",
         revision="b0070d3c9fb8b25c4b954aeb740e2f80924040df",
         filename="10Eros_Max_h3_hybrid_beta5_int8.safetensors",
@@ -192,7 +200,7 @@ def main() -> int:
         free_bytes = shutil.disk_usage(models_root).free
         if free_bytes < required_bytes:
             raise RuntimeError(
-                "Not enough free persistent storage: "
+                "Not enough free model storage: "
                 f"need at least {required_bytes / 1_000_000_000:.1f} GB, "
                 f"but only {free_bytes / 1_000_000_000:.1f} GB is free."
             )

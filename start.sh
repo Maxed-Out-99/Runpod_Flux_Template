@@ -51,6 +51,7 @@ mkdir -p \
   "${COMFYUI_DIR}/models/diffusion_models" \
   "${COMFYUI_DIR}/models/text_encoders" \
   "${COMFYUI_DIR}/models/vae" \
+  "${COMFYUI_DIR}/models/background_removal" \
   "${COMFYUI_DIR}/input" \
   "${COMFYUI_DIR}/output" \
   "${COMFYUI_DIR}/temp" \

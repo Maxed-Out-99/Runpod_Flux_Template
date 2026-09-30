@@ -29,7 +29,7 @@ class DownloaderTests(unittest.TestCase):
 
     def test_manifest_order_and_total(self):
         models = self.downloader.MODELS
-        self.assertEqual(5, len(models))
+        self.assertEqual(6, len(models))
         self.assertEqual(
             "10Eros_Max_h3_TURBO-hybrid_beta5_int8.safetensors",
             models[0].filename,
@@ -38,7 +38,11 @@ class DownloaderTests(unittest.TestCase):
             "10Eros_Max_h3_hybrid_beta5_int8.safetensors",
             models[-1].filename,
         )
-        self.assertEqual(61_044_291_471, sum(model.size_bytes for model in models))
+        self.assertEqual(
+            "background_removal/birefnet.safetensors",
+            models[-2].destination,
+        )
+        self.assertEqual(61_488_765_067, sum(model.size_bytes for model in models))
         self.assertEqual(len(models), len({model.destination for model in models}))
 
     def test_download_installs_verified_file(self):
@@ -114,7 +118,7 @@ class DownloaderTests(unittest.TestCase):
                     return_value=types.SimpleNamespace(free=0),
                 ),
             ):
-                with self.assertRaisesRegex(RuntimeError, "Not enough free persistent storage"):
+                with self.assertRaisesRegex(RuntimeError, "Not enough free model storage"):
                     self.downloader.main()
 
             self.assertEqual("failed", json.loads(status.read_text())["state"])
