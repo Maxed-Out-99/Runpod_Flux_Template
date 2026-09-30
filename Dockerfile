@@ -24,6 +24,7 @@ ENV PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:${PATH}"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
         ffmpeg \
@@ -32,8 +33,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libglib2.0-0 \
         python3 \
         python3-pip \
+        python3-dev \
         python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && command -v gcc \
+    && command -v python3-config
 
 RUN python3 -m venv /opt/venv \
     && python -m pip install --upgrade pip setuptools wheel \

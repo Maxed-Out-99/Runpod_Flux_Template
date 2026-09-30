@@ -22,6 +22,8 @@ All five repositories are intentionally unpinned. Docker clones the current defa
 - torchaudio `2.11.0` maintenance line, compatible with newer PyTorch releases
 - CUDA 13.0 PyTorch wheels on the NVIDIA CUDA 13.3.1/cuDNN Ubuntu 24.04 base image
 
+The image includes a C compiler and Python headers because PyTorch/Triton compiles GPU support code when the first H3 prompt runs.
+
 ComfyGallery starts with the container on port `8190`. Its browser button is adjusted during the image build to open the standard Runpod `8190` HTTP proxy; non-Runpod and Desktop behavior is left unchanged.
 
 ## What it downloads
