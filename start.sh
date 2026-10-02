@@ -65,7 +65,7 @@ echo "[models] Starting verified MiniMax H3 downloads in the background"
 python /opt/scripts/download_models.py \
   --comfy-root "${COMFYUI_DIR}" \
   --status-file "${DOWNLOAD_STATUS}" \
-  >> "${DOWNLOAD_LOG}" 2>&1 &
+  > >(tee -a "${DOWNLOAD_LOG}") 2>&1 &
 DOWNLOAD_PID=$!
 
 cleanup() {
