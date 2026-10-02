@@ -22,6 +22,7 @@ readonly -a PACKAGED_NODES=(
   "ComfyUI-KJNodes"
   "ComfyGallery"
   "ComfyUI-Crystools"
+  "ComfyUI-Spectrum-MiniMax-H3"
 )
 
 mkdir -p "${COMFYUI_DIR}/custom_nodes"

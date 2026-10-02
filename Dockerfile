@@ -14,6 +14,7 @@ ARG VHS_NODES_REPO=https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git
 ARG KJ_NODES_REPO=https://github.com/kijai/ComfyUI-KJNodes.git
 ARG COMFY_GALLERY_REPO=https://github.com/Maxed-Out-99/ComfyGallery.git
 ARG CRYSTOOLS_REPO=https://github.com/crystian/ComfyUI-Crystools.git
+ARG SPECTRUM_H3_REPO=https://github.com/xmarre/ComfyUI-Spectrum-MiniMax-H3.git
 ARG CUSTOM_NODES_CACHE_BUST=manual
 
 ENV PYTHONUNBUFFERED=1 \
@@ -65,6 +66,8 @@ RUN echo "[build] Custom-node refresh: ${CUSTOM_NODES_CACHE_BUST}" \
         /opt/ComfyUI/custom_nodes/ComfyGallery \
     && git clone --depth 1 "${CRYSTOOLS_REPO}" \
         /opt/ComfyUI/custom_nodes/ComfyUI-Crystools \
+    && git clone --depth 1 "${SPECTRUM_H3_REPO}" \
+        /opt/ComfyUI/custom_nodes/ComfyUI-Spectrum-MiniMax-H3 \
     && python /opt/scripts/patch_comfygallery.py \
         /opt/ComfyUI/custom_nodes/ComfyGallery/web/comfy_gallery_button.js \
     && python -m pip install --retries 10 \
@@ -81,6 +84,7 @@ RUN echo "[build] Custom-node refresh: ${CUSTOM_NODES_CACHE_BUST}" \
         /opt/ComfyUI/custom_nodes/ComfyUI-KJNodes \
         /opt/ComfyUI/custom_nodes/ComfyGallery \
         /opt/ComfyUI/custom_nodes/ComfyUI-Crystools \
+        /opt/ComfyUI/custom_nodes/ComfyUI-Spectrum-MiniMax-H3 \
     && python -c "import color_matcher, cpuinfo, cv2, deepdiff, imageio_ffmpeg, matplotlib, mss, piexif, pynvml; from PIL import Image"
 
 COPY --chmod=755 start.sh /opt/start.sh
